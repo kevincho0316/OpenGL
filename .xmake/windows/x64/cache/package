@@ -1,0 +1,69 @@
+{
+    glfw = {
+        envs = {
+            PATH = {
+                [[C:\Users\kevin\AppData\Local\.xmake\packages\n\ninja\v1.13.1\fd5a0995dca64146a4f4c4dbff879aad\bin]],
+                [[C:\Users\kevin\AppData\Local\.xmake\packages\c\cmake\4.2.3\674adf9609f646bc9f678b5e946b080a\bin]]
+            }
+        },
+        libfiles = [[C:\Users\kevin\AppData\Local\.xmake\packages\g\glfw\3.4\d59f6dd71e7647cc95d2c1d35e51a39a\lib\glfw3.lib]],
+        linkdirs = [[C:\Users\kevin\AppData\Local\.xmake\packages\g\glfw\3.4\d59f6dd71e7647cc95d2c1d35e51a39a\lib]],
+        version = "3.4",
+        syslinks = {
+            "user32",
+            "shell32",
+            "gdi32"
+        },
+        defines = "GLFW_INCLUDE_NONE",
+        license = "zlib",
+        __enabled = true,
+        installdir = [[C:\Users\kevin\AppData\Local\.xmake\packages\g\glfw\3.4\d59f6dd71e7647cc95d2c1d35e51a39a]],
+        sysincludedirs = [[C:\Users\kevin\AppData\Local\.xmake\packages\g\glfw\3.4\d59f6dd71e7647cc95d2c1d35e51a39a\include]],
+        __requirestr = "glfw",
+        links = {
+            "glfw3",
+            "opengl32"
+        },
+        static = true
+    },
+    glm = {
+        license = "MIT",
+        __enabled = true,
+        installdir = [[C:\Users\kevin\AppData\Local\.xmake\packages\g\glm\1.0.3\be4858b18f1c4ec49107db1df2647382]],
+        sysincludedirs = [[C:\Users\kevin\AppData\Local\.xmake\packages\g\glm\1.0.3\be4858b18f1c4ec49107db1df2647382\include]],
+        __requirestr = "glm",
+        version = "1.0.3"
+    },
+    glad = {
+        envs = {
+            PYTHONPATH = {
+                [[C:\Users\kevin\AppData\Local\.xmake\packages\p\python\3.14.3\a5aba9c06dd94164a8113d527e748a4b\Lib\site-packages]]
+            },
+            PATH = {
+                [[C:\Users\kevin\AppData\Local\.xmake\packages\n\ninja\v1.13.1\fd5a0995dca64146a4f4c4dbff879aad\bin]],
+                [[C:\Users\kevin\AppData\Local\.xmake\packages\c\cmake\4.2.3\674adf9609f646bc9f678b5e946b080a\bin]],
+                [[C:\Users\kevin\AppData\Local\.xmake\packages\p\python\3.14.3\a5aba9c06dd94164a8113d527e748a4b\bin]],
+                [[C:\Users\kevin\AppData\Local\.xmake\packages\p\python\3.14.3\a5aba9c06dd94164a8113d527e748a4b\bin]],
+                [[C:\Users\kevin\AppData\Local\.xmake\packages\p\python\3.14.3\a5aba9c06dd94164a8113d527e748a4b\Scripts]]
+            }
+        },
+        static = true,
+        linkdirs = [[C:\Users\kevin\AppData\Local\.xmake\packages\g\glad\v0.1.36\e8a7d85f737849599dafae527be6b4c2\lib]],
+        version = "v0.1.36",
+        license = "MIT",
+        __enabled = true,
+        installdir = [[C:\Users\kevin\AppData\Local\.xmake\packages\g\glad\v0.1.36\e8a7d85f737849599dafae527be6b4c2]],
+        __requireconfs = {
+            configs = {
+                spec = "gl",
+                api = "gl=4.6",
+                extensions = "GL_ARB_multibind,GL_ARB_multi_draw_indirect",
+                profile = "core"
+            }
+        },
+        sysincludedirs = [[C:\Users\kevin\AppData\Local\.xmake\packages\g\glad\v0.1.36\e8a7d85f737849599dafae527be6b4c2\include]],
+        __requirestr = "glad",
+        links = "glad",
+        libfiles = [[C:\Users\kevin\AppData\Local\.xmake\packages\g\glad\v0.1.36\e8a7d85f737849599dafae527be6b4c2\lib\glad.lib]]
+    }
+}

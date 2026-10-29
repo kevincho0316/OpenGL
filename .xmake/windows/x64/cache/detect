@@ -1,0 +1,114 @@
+{
+    find_program_fetch_package_xmake = {
+        cmake = false,
+        python3 = false,
+        python = false,
+        ninja = false,
+        python2 = false
+    },
+    find_program = {
+        ["cl.exe"] = [[C:\Program Files (x86)\Microsoft Visual Studio\18\BuildTools\VC\Tools\MSVC\14.50.35717\bin\HostX64\x64\cl.exe]],
+        nim = false,
+        zig = false,
+        dotnet = [[C:\Program Files\dotnet\dotnet.exe]],
+        ["7z"] = [[C:\Users\kevin\scoop\apps\xmake\current\winenv\bin\7z]],
+        ["C:\\Program Files (x86)\\Microsoft Visual Studio\\18\\BuildTools\\VC\\Tools\\MSVC\\14.50.35717\\bin\\HostX64\\x64\\cl.exe"] = [[c:\program files (x86)\microsoft visual studio\18\buildtools\vc\tools\msvc\14.50.35717\bin\hostx64\x64\cl.exe]],
+        git = [[C:\Program Files\Git\cmd\git.exe]],
+        gzip = false
+    },
+    ["lib.detect.has_flags"] = {
+        ["windows_x64_c:\\program files (x86)\\microsoft visual studio\\18\\buildtools\\vc\\tools\\msvc\\14.50.35717\\bin\\hostx64\\x64\\cl.exe__cxx_cxflags_-nologo_-DNDEBUG"] = true,
+        ["windows_x64_c:\\program files (x86)\\microsoft visual studio\\18\\buildtools\\vc\\tools\\msvc\\14.50.35717\\bin\\hostx64\\x64\\cl.exe__cxx_cxflags_-nologo_cl_external_includedir"] = true,
+        ["windows_x64_c:\\program files (x86)\\microsoft visual studio\\18\\buildtools\\vc\\tools\\msvc\\14.50.35717\\bin\\hostx64\\x64\\cl.exe__cxx_cxflags_-nologo_cl_sourceDependencies"] = true,
+        ["windows_x64_c:\\program files (x86)\\microsoft visual studio\\18\\buildtools\\vc\\tools\\msvc\\14.50.35717\\bin\\hostx64\\x64\\cl.exe__cxx__-nologo_-O2"] = true
+    },
+    find_program_msvc_arch_x64_plat_windows_checktoolcxx = {
+        ["cl.exe"] = [[C:\Program Files (x86)\Microsoft Visual Studio\18\BuildTools\VC\Tools\MSVC\14.50.35717\bin\HostX64\x64\cl.exe]]
+    },
+    find_package_windows_x64_fetch_package_xmake = {
+        ["xmake::glfw_d59f6dd71e7647cc95d2c1d35e51a39a_release_3.4_external"] = {
+            linkdirs = {
+                [[C:\Users\kevin\AppData\Local\.xmake\packages\g\glfw\3.4\d59f6dd71e7647cc95d2c1d35e51a39a\lib]]
+            },
+            links = {
+                "glfw3"
+            },
+            libfiles = {
+                [[C:\Users\kevin\AppData\Local\.xmake\packages\g\glfw\3.4\d59f6dd71e7647cc95d2c1d35e51a39a\lib\glfw3.lib]]
+            },
+            defines = "GLFW_INCLUDE_NONE",
+            sysincludedirs = {
+                [[C:\Users\kevin\AppData\Local\.xmake\packages\g\glfw\3.4\d59f6dd71e7647cc95d2c1d35e51a39a\include]]
+            },
+            license = "zlib",
+            syslinks = {
+                "user32",
+                "shell32",
+                "gdi32"
+            },
+            version = "3.4",
+            static = true
+        },
+        ["xmake::glm_be4858b18f1c4ec49107db1df2647382_release_1.0.3_external"] = {
+            license = "MIT",
+            sysincludedirs = {
+                [[C:\Users\kevin\AppData\Local\.xmake\packages\g\glm\1.0.3\be4858b18f1c4ec49107db1df2647382\include]]
+            },
+            version = "1.0.3"
+        },
+        ["xmake::glad_e8a7d85f737849599dafae527be6b4c2_release_v0.1.36_external"] = {
+            static = true,
+            links = {
+                "glad"
+            },
+            version = "v0.1.36",
+            license = "MIT",
+            sysincludedirs = {
+                [[C:\Users\kevin\AppData\Local\.xmake\packages\g\glad\v0.1.36\e8a7d85f737849599dafae527be6b4c2\include]]
+            },
+            linkdirs = {
+                [[C:\Users\kevin\AppData\Local\.xmake\packages\g\glad\v0.1.36\e8a7d85f737849599dafae527be6b4c2\lib]]
+            },
+            libfiles = {
+                [[C:\Users\kevin\AppData\Local\.xmake\packages\g\glad\v0.1.36\e8a7d85f737849599dafae527be6b4c2\lib\glad.lib]]
+            }
+        }
+    },
+    find_programver = {
+        ["C:\\Program Files\\dotnet\\dotnet.exe"] = "10.0.107"
+    },
+    find_program_msvc_arch_x64_plat_windows_checktoolld = {
+        ["link.exe"] = [[C:\Program Files (x86)\Microsoft Visual Studio\18\BuildTools\VC\Tools\MSVC\14.50.35717\bin\HostX64\x64\link.exe]]
+    },
+    ["detect.sdks.find_dotnet"] = {
+        dotnet = {
+            bindir = [[C:\Program Files\dotnet]],
+            version = "10.0.107",
+            sdkdir = [[C:\Program Files\dotnet\sdk\10.0.107]],
+            sdkver = "10.0.107",
+            sdks = {
+                {
+                    directory = [[C:\Program Files\dotnet\sdk\10.0.107]],
+                    version = "10.0.107"
+                }
+            },
+            runtimes = {
+                {
+                    name = "Microsoft.AspNetCore.App",
+                    version = "10.0.7"
+                },
+                {
+                    name = "Microsoft.NETCore.App",
+                    version = "10.0.7"
+                },
+                {
+                    name = "Microsoft.WindowsDesktop.App",
+                    version = "10.0.7"
+                }
+            }
+        }
+    },
+    find_program_msvc_arch_x64_plat_windows_checktoolcc = {
+        ["cl.exe"] = [[C:\Program Files (x86)\Microsoft Visual Studio\18\BuildTools\VC\Tools\MSVC\14.50.35717\bin\HostX64\x64\cl.exe]]
+    }
+}

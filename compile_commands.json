@@ -1,0 +1,6 @@
+[
+{
+  "directory": "/home/jjj/Projects/OpenGL",
+  "arguments": ["/usr/bin/g++", "-c", "-m64", "-fvisibility=hidden", "-fvisibility-inlines-hidden", "-O3", "-std=c++17", "-I", "/home/jjj/.xmake/packages/g/glad/v2.0.8/d5fd379e748349b4856fd6c5b7bed689/include", "-DNDEBUG", "-o", "build/.objs/OpenGl/linux/x86_64/release/src/main.cpp.o", "src/main.cpp"],
+  "file": "src/main.cpp"
+}]

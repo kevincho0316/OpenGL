@@ -1,0 +1,16 @@
+{
+    cmdlines = {
+        "xmake f -y",
+        "xmake f -y",
+        "xmake f -y",
+        "xmake project -k compile_commands",
+        [[xmake lua C:\Users\kevin\scoop\apps\xmake\current\modules\private\utils\statistics.lua]],
+        "xmake run",
+        [[xmake lua C:\Users\kevin\scoop\apps\xmake\current\actions\build\cleaner.lua]],
+        "xmake run",
+        "xmake run",
+        "xmake run",
+        "xmake run",
+        "xmake run"
+    }
+}
