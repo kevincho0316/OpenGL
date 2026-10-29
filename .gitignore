@@ -1,0 +1,5 @@
+.claude/       # ignore a folder
+.env                # ignore a specific file
+build/
+.DS_Store
+!important.log     # "!" re-includes a file that a pattern would exclude

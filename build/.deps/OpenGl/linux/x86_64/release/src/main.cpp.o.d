@@ -1,7 +1,4 @@
 {
-    files = {
-        "src/main.cpp"
-    },
     values = {
         "/usr/bin/g++",
         {
@@ -17,5 +14,8 @@
     },
     depfiles = "main.o: src/main.cpp src/shader.h\
 ",
+    files = {
+        "src/main.cpp"
+    },
     depfiles_format = "gcc"
 }
