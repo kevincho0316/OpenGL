@@ -1,6 +1,16 @@
 [
 {
-  "directory": "/home/jjj/Projects/OpenGL",
-  "arguments": ["/usr/bin/g++", "-c", "-m64", "-fvisibility=hidden", "-fvisibility-inlines-hidden", "-O3", "-std=c++17", "-I", "/home/jjj/.xmake/packages/g/glad/v2.0.8/d5fd379e748349b4856fd6c5b7bed689/include", "-DNDEBUG", "-o", "build/.objs/OpenGl/linux/x86_64/release/src/main.cpp.o", "src/main.cpp"],
-  "file": "src/main.cpp"
+  "directory": "/data/data/com.termux/files/home/projects/OpenGL",
+  "arguments": ["/data/data/com.termux/files/home/android-ndk-r29/toolchains/llvm/prebuilt/linux-x86_64/bin/clang", "-c", "--sysroot=/data/data/com.termux/files/home/android-ndk-r29/toolchains/llvm/prebuilt/linux-x86_64/sysroot", "-I", "/data/data/com.termux/files/home/android-ndk-r29/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/aarch64-linux-android", "-Qunused-arguments", "--target=aarch64-none-linux-android24", "-fPIC", "-Oz", "-Isrc", "-Ithird_party/sol2/include", "-I/data/data/com.termux/files/home/android-ndk-r29/sources/android/native_app_glue", "-DUSE_GLES", "-I", "/data/data/com.termux/files/home/.xmake/packages/l/lua/v5.4.8/c32aabe1fb7a41b0b7c0441c623a430e/include/lua", "-I", "/data/data/com.termux/files/home/.xmake/packages/g/glm/1.0.3/d054be7c3e54454da512debcd0973e53/include", "-DNDEBUG", "-o", "build/.objs/app/android/arm64-v8a/release/__/__/android-ndk-r29/sources/android/native_app_glue/android_native_app_glue.c.o", "../../android-ndk-r29/sources/android/native_app_glue/android_native_app_glue.c"],
+  "file": "../../android-ndk-r29/sources/android/native_app_glue/android_native_app_glue.c"
+},
+{
+  "directory": "/data/data/com.termux/files/home/projects/OpenGL",
+  "arguments": ["/data/data/com.termux/files/home/android-ndk-r29/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++", "-c", "--sysroot=/data/data/com.termux/files/home/android-ndk-r29/toolchains/llvm/prebuilt/linux-x86_64/sysroot", "-I", "/data/data/com.termux/files/home/android-ndk-r29/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/aarch64-linux-android", "-Qunused-arguments", "--target=aarch64-none-linux-android24", "-fPIC", "-Oz", "-std=c++17", "-Isrc", "-Ithird_party/sol2/include", "-I/data/data/com.termux/files/home/android-ndk-r29/sources/android/native_app_glue", "-DUSE_GLES", "-I", "/data/data/com.termux/files/home/.xmake/packages/l/lua/v5.4.8/c32aabe1fb7a41b0b7c0441c623a430e/include/lua", "-I", "/data/data/com.termux/files/home/.xmake/packages/g/glm/1.0.3/d054be7c3e54454da512debcd0973e53/include", "-DNDEBUG", "-o", "build/.objs/app/android/arm64-v8a/release/src/platform/android/main.cpp.o", "src/platform/android/main.cpp"],
+  "file": "src/platform/android/main.cpp"
+},
+{
+  "directory": "/data/data/com.termux/files/home/projects/OpenGL",
+  "arguments": ["/data/data/com.termux/files/home/android-ndk-r29/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++", "-c", "--sysroot=/data/data/com.termux/files/home/android-ndk-r29/toolchains/llvm/prebuilt/linux-x86_64/sysroot", "-I", "/data/data/com.termux/files/home/android-ndk-r29/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/aarch64-linux-android", "-Qunused-arguments", "--target=aarch64-none-linux-android24", "-fPIC", "-Oz", "-std=c++17", "-Isrc", "-Ithird_party/sol2/include", "-I/data/data/com.termux/files/home/android-ndk-r29/sources/android/native_app_glue", "-DUSE_GLES", "-I", "/data/data/com.termux/files/home/.xmake/packages/l/lua/v5.4.8/c32aabe1fb7a41b0b7c0441c623a430e/include/lua", "-I", "/data/data/com.termux/files/home/.xmake/packages/g/glm/1.0.3/d054be7c3e54454da512debcd0973e53/include", "-DNDEBUG", "-o", "build/.objs/app/android/arm64-v8a/release/src/platform/android/shader.cpp.o", "src/platform/android/shader.cpp"],
+  "file": "src/platform/android/shader.cpp"
 }]
