@@ -1,6 +1,10 @@
 -- 저장 후 ./push.sh 하면 앱에 바로 반영됨
 -- API: clear_color(r,g,b)  rect(x,y,w,h, r,g,b)  print(...)
 -- 좌표: 화면 중앙 (0,0), 가로/세로 -1 ~ 1
+-- Camera: camPos(vec3)  camRot(yaw,pitch)  camLookAt(vec3)  camMove(vec3 right/up/forward)
+--         camPerspective([fov=45])  camOrtho([size=1])  camClip(near,far)
+--         camGetPos() -> vec3  camFront() -> vec3
+--         기본값: ortho, pos (0,0,1), -Z 방향
 
 local t = 0
 
@@ -16,8 +20,14 @@ function update(dt)
   setFloat("uradius", 0.5)
   setFloat("ufadeRad", 0.5)
   setFloat("NOISE_AMT", 0.6)
-  setTrans( t*t, vec3.new(0.0, 0.0, 1.0),
+  setTrans( t*20, vec3.new(0.0, 0.0, 1.0),
                    vec3.new(0.5, -0.5, 0.0));
+
+  -- 카메라 테스트: 원점 주위를 공전하면서 위아래로 흔들림
+  camPerspective(60)
+  local orbit = t * 0.8
+  camPos(vec3.new(math.sin(orbit) * 7, math.sin(t * 0.5) * 3, math.cos(orbit) * 7))
+  camLookAt(vec3.new(0, 0, 0))
 
 
   local a = t * 2 * math.pi / 5   -- 5초에 한 바퀴

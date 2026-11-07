@@ -10,6 +10,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #define SOL_ALL_SAFETIES_ON 1
+#include "core/camera.h"
 #include "shader.h"
 #include <cstdio>
 #include <filesystem>
@@ -58,6 +59,7 @@ struct App {
   GLuint vao = 0, vbo = 0;
   float clear[3] = {0, 0, 0};
   Shader shader;
+  Camera cam; // 스크립트 리로드해도 유지됨
   std::unique_ptr<sol::state> lua;
   std::string lastError; // 런타임 에러 (status 로 조회)
   std::string printBuf;  // print() 출력 (status 로 조회)
@@ -165,6 +167,28 @@ static std::string loadScript(App &a, const std::string &src) {
                   [&a](float angle, glm::vec3 axis, glm::vec3 scale) {
                     setTrans(a, angle, axis, scale);
                   });
+
+  // ---- camera ----
+  L->set_function("camPos", [&a](glm::vec3 p) { a.cam.position = p; });
+  L->set_function("camRot", [&a](float yaw, float pitch) {
+    a.cam.setRotation(yaw, pitch);
+  });
+  L->set_function("camLookAt", [&a](glm::vec3 t) { a.cam.lookAt(t); });
+  L->set_function("camMove", [&a](glm::vec3 d) { a.cam.move(d); });
+  L->set_function("camPerspective", [&a](sol::optional<float> fov) {
+    a.cam.perspective = true;
+    a.cam.fov = fov.value_or(45.0f);
+  });
+  L->set_function("camOrtho", [&a](sol::optional<float> size) {
+    a.cam.perspective = false;
+    a.cam.orthoSize = size.value_or(1.0f);
+  });
+  L->set_function("camClip", [&a](float n, float f) {
+    a.cam.zNear = n;
+    a.cam.zFar = f;
+  });
+  L->set_function("camGetPos", [&a]() { return a.cam.position; });
+  L->set_function("camFront", [&a]() { return a.cam.front(); });
 
   L->set_function("rect", [&a](glm::vec4 rect, glm::vec3 color) {
     if (!a.shader.ID)
@@ -309,6 +333,9 @@ static void frame(App &a, float dt) {
   glClear(GL_COLOR_BUFFER_BIT);
   a.shader.use();
   glBindVertexArray(a.vao);
+  float aspect = h > 0 ? (float)w / (float)h : 1.0f;
+  a.shader.setMat4("view", a.cam.view());
+  a.shader.setMat4("projection", a.cam.projection(aspect));
 
   if (a.lua && a.lastError.empty()) {
     sol::protected_function upd = (*a.lua)["update"];

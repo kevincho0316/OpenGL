@@ -4,6 +4,7 @@
 #include "gl.h"
 #include "glm/ext/vector_float3.hpp"
 #include "glm/ext/vector_float4.hpp"
+#include "glm/ext/matrix_float4x4.hpp"
 #include <GLES3/gl3.h>
 #include <android/asset_manager.h>
 #include <set>
@@ -29,5 +30,6 @@ public:
   void setFloat(const std::string &n, float v) const;
   void setVec3(const std::string &n, glm::vec3 v) const;
   void setVec4(const std::string &n, glm::vec4) const;
+  void setMat4(const std::string &n, const glm::mat4 &m) const;
   GLuint getUniLoc(const std::string &n) const;
 };
