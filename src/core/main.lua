@@ -6,20 +6,21 @@ local t = 0
 
 function update(dt)
   t = t + dt
-  clear_color(0.0, 0.0 , 0.0)
+  clear_color(0.0, 0.0, 0.0)
 
-    local a =  (2 * math.pi / 5)
-    rect(0,0, 13,13,
-         0.5 + 1 * math.sin(a), 0.6, 1.0 - 0.15)
+  setFloat("uTime", t)
+  setFloat("uToffset", 0.06)
+  setFloat("uboost", 2.0)
+  setFloat("ucontrast", 0.8)
+  setFloat("uConCenter", 0.8)
+  setFloat("uradius", 0.5)
+  setFloat("ufadeRad", 0.5)
+  setFloat("NOISE_AMT", 0.6)
+  setTrans( t*t, vec3.new(0.0, 0.0, 1.0),
+                   vec3.new(0.5, -0.5, 0.0));
 
-    setFloat("uTime",t)
-    setFloat("uToffset",0.06)
-    setFloat("uboost",2.0)
-    setFloat("ucontrast",0.8)
-    setFloat("uConCenter",0.8)
-    setFloat("uradius",0.5)
-    setFloat("ufadeRad",0.5)
-    setFloat("NOISE_AMT", 0.6)
+
+  local a = t * 2 * math.pi / 5   -- 5초에 한 바퀴
+  rect(vec4.new(0, 0, 6, 13),
+       vec3.new(0.5 + math.sin(a), 0.6, 0.85))
 end
-
-print("main.lua loaded")

@@ -1,7 +1,14 @@
 // Android: NativeActivity + EGL + GLES3 + Lua(sol2) 핫 리로드 테스트
 // 스크립트 전송: Termux에서 ./push.sh  (127.0.0.1:7777, NUL 바이트로 끝)
 #include "../../gl.h"
+#include "glm/ext/vector_float3.hpp"
+#include "glm/ext/vector_float4.hpp"
 #include <EGL/egl.h>
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include <android/asset_manager.h>
 #include <android/log.h>
 #include <android_native_app_glue.h>
@@ -27,25 +34,28 @@ local t = 0
 
 function update(dt)
   t = t + dt
-  clear_color(0.0, 0.0 , 0.0)
+  clear_color(0.0, 0.0, 0.0)
 
-    local a =  (2 * math.pi / 5)
-    rect(0,0, 6,13,
-         0.5 + 1 * math.sin(a), 0.6, 1.0 - 0.15)
+  setFloat("uTime", t)
+  setFloat("uToffset", 0.06)
+  setFloat("uboost", 2.0)
+  setFloat("ucontrast", 0.8)
+  setFloat("uConCenter", 0.8)
+  setFloat("uradius", 0.5)
+  setFloat("ufadeRad", 0.5)
+  setFloat("NOISE_AMT", 0.6)
+  setTrans( 180.0, vec3.new(0.0, 0.0, 1.0),
+                   vec3.new(0.5, -0.5, 0.0));
 
-    setFloat("uTime",t)
-    setFloat("uToffset",0.06)
-    setFloat("uboost",2.0)
-    setFloat("ucontrast",0.8)
-    setFloat("uConCenter",0.8)
-    setFloat("uradius",0.5)
-    setFloat("ufadeRad",0.5)
-    setFloat("NOISE_AMT", 0.6)
+
+  local a = t * 2 * math.pi / 5   -- 5초에 한 바퀴
+  rect(vec4.new(0, 0, 6, 13),
+       vec3.new(0.5 + math.sin(a), 0.6, 0.85))
 end
+)LUA";
 
-print("main.lua loaded"))LUA";
 static const char *VsDir = "shaders/VertexShader.glsl";
-static const char *FsDir = "shaders/FragmentShader.glsl";
+static const char *FsDir = "shaders/ButterflyFgSh.glsl";
 
 struct App {
   // EGL / GL (창이 없어지면 전부 해제 → 다시 생성)
@@ -121,12 +131,30 @@ static void termGL(App &a) {
   a.ctx = EGL_NO_CONTEXT;
 }
 
+void setTrans(App &a, float angle, glm::vec3 angleVec, glm::vec3 scale) {
+  glm::mat4 trans = glm::mat4(1.0f);
+  trans = glm::rotate(trans, glm::radians(angle), angleVec);
+  trans = glm::scale(trans, scale);
+  unsigned int transformLoc = glGetUniformLocation(a.shader.ID, "transform");
+  glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+}
+
 // ---------------- Lua ----------------
 // 성공 시 "ok", 실패 시 에러 메시지. 실패하면 이전 스크립트 유지.
 static std::string loadScript(App &a, const std::string &src) {
   auto L = std::make_unique<sol::state>();
   L->open_libraries(sol::lib::base, sol::lib::math, sol::lib::string,
                     sol::lib::table);
+
+  L->new_usertype<glm::vec3>(
+      "vec3", sol::constructors<glm::vec3(), glm::vec3(float, float, float)>(),
+      "x", &glm::vec3::x, "y", &glm::vec3::y, "z", &glm::vec3::z);
+
+  L->new_usertype<glm::vec4>(
+      "vec4",
+      sol::constructors<glm::vec4(), glm::vec4(float, float, float, float)>(),
+      "x", &glm::vec4::x, "y", &glm::vec4::y, "z", &glm::vec4::z, "w",
+      &glm::vec4::w);
 
   L->set_function("clear_color", [&a](float r, float g, float b) {
     a.clear[0] = r;
@@ -144,16 +172,28 @@ static std::string loadScript(App &a, const std::string &src) {
     a.shader.setFloat(n, v);
   });
 
-  L->set_function("rect", [&a](float x, float y, float w, float h, float r,
-                               float g, float b) {
+  L->set_function("setVec3", [&a](const std::string &n, glm::vec3 v) {
+    a.shader.setVec3(n, v);
+  });
+  L->set_function("setVec4", [&a](const std::string &n, glm::vec4 v) {
+    a.shader.setVec4(n, v);
+  });
+
+  L->set_function("setTrans",
+                  [&a](float angle, glm::vec3 axis, glm::vec3 scale) {
+                    setTrans(a, angle, axis, scale);
+                  });
+
+  L->set_function("rect", [&a](glm::vec4 rect, glm::vec3 color) {
     if (!a.shader.ID)
       return;
 
-    a.shader.setVec4("uRect", x, y, w, h);
-    a.shader.setVec3("uColor", r, g, b);
+    a.shader.setVec4("uRect", rect);
+    a.shader.setVec3("uColor", color);
 
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
   });
+
   L->set_function("print", [&a](sol::this_state ts, sol::variadic_args va) {
     sol::state_view lv(ts);
     sol::protected_function tostr = lv["tostring"];
@@ -246,6 +286,12 @@ static void pollSocket(App &a) {
   close(c);
 }
 
+static double now() {
+  timespec ts;
+  clock_gettime(CLOCK_MONOTONIC, &ts);
+  return ts.tv_sec + ts.tv_nsec * 1e-9;
+}
+
 // ---------------- 프레임 ----------------
 static void frame(App &a, float dt) {
   EGLint w = 0, h = 0;
@@ -261,6 +307,7 @@ static void frame(App &a, float dt) {
     sol::protected_function upd = (*a.lua)["update"];
     if (upd.valid()) {
       auto r = upd(dt);
+
       if (!r.valid()) {
         sol::error e = r;
         a.lastError = e.what();
@@ -285,12 +332,6 @@ static void onCmd(android_app *app, int32_t cmd) {
     termGL(a);
     break;
   }
-}
-
-static double now() {
-  timespec ts;
-  clock_gettime(CLOCK_MONOTONIC, &ts);
-  return ts.tv_sec + ts.tv_nsec * 1e-9;
 }
 
 void android_main(android_app *app) {

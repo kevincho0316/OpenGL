@@ -2,11 +2,13 @@
 // shader.h
 #pragma once
 #include "gl.h"
+#include "glm/ext/vector_float3.hpp"
+#include "glm/ext/vector_float4.hpp"
 #include <GLES3/gl3.h>
 #include <android/asset_manager.h>
 #include <set>
 #include <string>
-
+#
 class Shader {
   std::set<std::string> seen;
 
@@ -25,7 +27,7 @@ public:
   void setBool(const std::string &n, bool v) const;
   void setInt(const std::string &n, int v) const;
   void setFloat(const std::string &n, float v) const;
-  void setVec3(const std::string &n, float x, float y, float z) const;
-  void setVec4(const std::string &n, float x, float y, float z, float w) const;
+  void setVec3(const std::string &n, glm::vec3 v) const;
+  void setVec4(const std::string &n, glm::vec4) const;
   GLuint getUniLoc(const std::string &n) const;
 };

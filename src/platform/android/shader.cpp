@@ -1,5 +1,7 @@
 // shader.cpp
 #include "shader.h"
+#include "glm/ext/vector_float3.hpp"
+#include "glm/ext/vector_float4.hpp"
 #include <GLES3/gl3.h>
 #include <cstdio>
 #include <string>
@@ -110,13 +112,12 @@ void Shader::setFloat(const std::string &n, float v) const {
   glUniform1f(glGetUniformLocation(ID, n.c_str()), v);
 }
 
-void Shader::setVec3(const std::string &n, float x, float y, float z) const {
-  glUniform3f(glGetUniformLocation(ID, n.c_str()), x, y, z);
+void Shader::setVec3(const std::string &n, glm::vec3 v) const {
+  glUniform3f(glGetUniformLocation(ID, n.c_str()), v.x, v.y, v.z);
 }
 
-void Shader::setVec4(const std::string &n, float x, float y, float z,
-                     float w) const {
-  glUniform4f(glGetUniformLocation(ID, n.c_str()), x, y, z, w);
+void Shader::setVec4(const std::string &n, glm::vec4 v) const {
+  glUniform4f(glGetUniformLocation(ID, n.c_str()), v.x, v.y, v.z, v.w);
 }
 
 GLuint Shader::getUniLoc(const std::string &n) const {
