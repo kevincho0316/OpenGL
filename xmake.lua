@@ -14,39 +14,40 @@ if is_plat("android") then
     if not os.isdir(termux_inc .. "/glm") then add_requires("glm") end
 else
     add_requires("glfw", "glm")
-    add_requires("glad", {configs = {profile = "core"}})
+    add_requires("glad", { configs = { profile = "core" } })
 end
 
 target("app")
-    add_files("src/core/*.cpp")
-    add_includedirs("src")
-    add_packages('lua')
-    add_includedirs("third_party/sol2/include")
-    
-    if is_plat("android") then
-        local ndk  = os.getenv("ANDROID_NDK") or ""
-        local glue = path.join(ndk, "sources/android/native_app_glue")
-        set_kind("shared")
-        set_basename("main")
-        add_files("src/platform/android/*.cpp")
-        add_files(path.join(glue, "android_native_app_glue.c"))
-        add_includedirs(glue)
-        if os.isdir(termux_inc .. "/glm") then add_includedirs(termux_inc) else add_packages("glm") end
-        add_defines("USE_GLES")
-        add_syslinks("android", "EGL", "GLESv3", "log")
-        add_ldflags("-u ANativeActivity_onCreate", {force = true})
-        add_ldflags("-Wl,--no-undefined", {force = true})
-    else
-        set_kind("binary")
-        set_rundir("$(projectdir)")
-        add_files("src/platform/desktop/*.cpp")
-        add_packages("glfw", "glm", "glad")
-        if is_plat("windows") then
-            add_links("opengl32")
-            add_syslinks("ws2_32")
-        elseif is_plat("linux") then
-            add_links("GL")
-        elseif is_plat("macosx") then
-            add_frameworks("OpenGL")
-        end
+add_files("src/core/*.cpp")
+add_includedirs("src")
+add_includedirs("third_party")
+add_packages('lua')
+add_includedirs("third_party/sol2/include")
+
+if is_plat("android") then
+    local ndk  = os.getenv("ANDROID_NDK") or ""
+    local glue = path.join(ndk, "sources/android/native_app_glue")
+    set_kind("shared")
+    set_basename("main")
+    add_files("src/platform/android/*.cpp")
+    add_files(path.join(glue, "android_native_app_glue.c"))
+    add_includedirs(glue)
+    if os.isdir(termux_inc .. "/glm") then add_includedirs(termux_inc) else add_packages("glm") end
+    add_defines("USE_GLES")
+    add_syslinks("android", "EGL", "GLESv3", "log")
+    add_ldflags("-u ANativeActivity_onCreate", { force = true })
+    add_ldflags("-Wl,--no-undefined", { force = true })
+else
+    set_kind("binary")
+    set_rundir("$(projectdir)")
+    add_files("src/platform/desktop/*.cpp")
+    add_packages("glfw", "glm", "glad", 'freetype')
+    if is_plat("windows") then
+        add_links("opengl32")
+        add_syslinks("ws2_32")
+    elseif is_plat("linux") then
+        add_links("GL")
+    elseif is_plat("macosx") then
+        add_frameworks("OpenGL")
     end
+end

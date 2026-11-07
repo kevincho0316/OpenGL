@@ -9,28 +9,28 @@
 local t = 0
 
 function update(dt)
-  t = t + dt
-  clear_color(0.0, 0.0, 0.0)
+    t = t + dt
+    clear_color(0.0, 0.0, 0.0)
 
-  setFloat("uTime", t)
-  setFloat("uToffset", 0.06)
-  setFloat("uboost", 2.0)
-  setFloat("ucontrast", 0.8)
-  setFloat("uConCenter", 0.8)
-  setFloat("uradius", 0.5)
-  setFloat("ufadeRad", 0.5)
-  setFloat("NOISE_AMT", 0.6)
-  setTrans( t*20, vec3.new(0.0, 0.0, 1.0),
-                   vec3.new(0.5, -0.5, 0.0));
+    setFloat("uTime", t)
+    setFloat("uToffset", 0.06)
+    setFloat("uboost", 2.0)
+    setFloat("ucontrast", 0.8)
+    setFloat("uConCenter", 0.8)
+    setFloat("uradius", 0.5)
+    setFloat("ufadeRad", 0.5)
+    setFloat("NOISE_AMT", 0.6)
+    setTrans(t * 20, vec3.new(0.0, 0.0, 1.0),
+        vec3.new(0.5, -0.5, 0.0));
 
-  -- 카메라 테스트: 원점 주위를 공전하면서 위아래로 흔들림
-  camPerspective(60)
-  local orbit = t * 0.8
-  camPos(vec3.new(math.sin(orbit) * 7, math.sin(t * 0.5) * 3, math.cos(orbit) * 7))
-  camLookAt(vec3.new(0, 0, 0))
+    -- 카메라 테스트: 원점 주위를 공전하면서 위아래로 흔들림
+    camPerspective(60)
+    local orbit = t * 0.8
+    camPos(vec3.new(math.sin(orbit) * 7, math.sin(t * 0.5) * 3, math.cos(orbit) * 7))
+    camLookAt(vec3.new(0, 0, 0))
 
 
-  local a = t * 2 * math.pi / 5   -- 5초에 한 바퀴
-  rect(vec4.new(0, 0, 6, 13),
-       vec3.new(0.5 + math.sin(a), 0.6, 0.85))
+    local a = t * 2 * math.pi / 5 -- 5초에 한 바퀴
+    rect(vec4.new(0, 0, 6, 13),
+        vec3.new(0.5 + math.sin(a), 0.6, 0.85))
 end
