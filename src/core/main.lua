@@ -7,6 +7,9 @@
 --         기본값: ortho, pos (0,0,1), -Z 방향
 
 local t = 0
+function init()
+    --setFont('/fonts/pixel.ttf', 35.0)
+end
 
 function update(dt)
     t = t + dt
@@ -22,6 +25,9 @@ function update(dt)
     setFloat("NOISE_AMT", 0.6)
     setTrans(t * 20, vec3.new(0.0, 0.0, 1.0),
         vec3.new(0.5, -0.5, 0.0));
+
+    setText(string.format("%.2f", t), 50, 100, 5, vec4.new(1, 1, 1, 1))
+
 
     -- 카메라 테스트: 원점 주위를 공전하면서 위아래로 흔들림
     camPerspective(60)

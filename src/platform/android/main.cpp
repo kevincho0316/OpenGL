@@ -11,9 +11,11 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "log.h"
 #include <android/asset_manager.h>
 #include <android/log.h>
 #include <android_native_app_glue.h>
+#include <vector>
 #define SOL_ALL_SAFETIES_ON 1
 #include "core/camera.h"
 #include "core/file.h"
@@ -38,6 +40,9 @@ static const int PORT = 7777;
 static const char *DEFAULT_SCRIPT = R"LUA(
 
 local t = 0
+function init()
+    setFont('fonts/pixel.ttf', 35.0)
+end
 
 function update(dt)
   t = t + dt
@@ -64,6 +69,12 @@ end
 static const char *VsDir = "shaders/VertexShader.glsl";
 static const char *FsDir = "shaders/ButterflyFgSh.glsl";
 
+struct TextCmd {
+    std::string s;
+    float x, y, size;
+    glm::vec4 color;
+};
+
 struct App {
     // EGL / GL (창이 없어지면 전부 해제 → 다시 생성)
     EGLDisplay dpy = EGL_NO_DISPLAY;
@@ -73,8 +84,13 @@ struct App {
     float clear[3] = {0, 0, 0};
     Shader shader;
     Camera cam; // 스크립트 리로드해도 유지됨
+    Font font;
+    TextRenderer text;
+    std::vector<TextCmd> texts;
+
     // Lua (GL 객체를 갖지 않으므로 컨텍스트 손실과 무관하게 유지)
     std::unique_ptr<sol::state> lua;
+    bool needInit = false;
     std::string lastError; // 런타임 에러 (status 로 조회)
     std::string printBuf;  // print() 출력 (status 로 조회)
     int listenFd = -1;
@@ -174,6 +190,7 @@ static std::string loadScript(App &a, const std::string &src) {
     L->set_function("setBool", [&a](const std::string &n, bool v) {
         a.shader.setBool(n, v);
     });
+
     L->set_function(
         "setInt", [&a](const std::string &n, int v) { a.shader.setInt(n, v); });
 
@@ -214,6 +231,18 @@ static std::string loadScript(App &a, const std::string &src) {
     });
     L->set_function("camGetPos", [&a]() { return a.cam.position; });
     L->set_function("camFront", [&a]() { return a.cam.front(); });
+    //-------text----------
+    L->set_function("setFont", [&a](const std::string &p, float size) {
+        if (!a.font.load(p.c_str(), size))
+            return;                  // 실패 시 기존 텍스처 유지
+        if (a.ctx != EGL_NO_CONTEXT) // 컨텍스트가 있으면 바로 텍스처 갱신
+            a.text.init(a.font);
+    });
+
+    L->set_function("setText", [&a](std::string s, float x, float y, float size,
+                                    glm::vec4 color) {
+        a.texts.push_back({s, x, y, size, color});
+    });
 
     L->set_function("rect", [&a](glm::vec4 rect, glm::vec3 color) {
         if (!a.shader.ID)
@@ -247,6 +276,7 @@ static std::string loadScript(App &a, const std::string &src) {
     }
     a.lua = std::move(L);
     a.lastError.clear();
+    a.needInit = true;
     LOG("script loaded (%zu bytes)", src.size());
     return "ok";
 }
@@ -324,7 +354,7 @@ static double now() {
 }
 
 // ---------------- 프레임 ----------------
-static void frame(App &a, float dt, TextRenderer &text) {
+static void frame(App &a, float dt) {
     EGLint w = 0, h = 0;
     eglQuerySurface(a.dpy, a.surf, EGL_WIDTH, &w);
     eglQuerySurface(a.dpy, a.surf, EGL_HEIGHT, &h);
@@ -336,7 +366,22 @@ static void frame(App &a, float dt, TextRenderer &text) {
     float aspect = h > 0 ? (float)w / (float)h : 1.0f;
     a.shader.setMat4("view", a.cam.view());
     a.shader.setMat4("projection", a.cam.projection(aspect));
-    text.draw("Hello", 50.0f, 100.0f, glm::vec4(1, 1, 1, 1), (int)w, (int)h);
+
+    if (a.lua && a.lastError.empty() && a.needInit) {
+        a.needInit = false;
+        sol::protected_function ini = (*a.lua)["init"];
+        if (ini.valid()) {
+            auto r = ini();
+            if (!r.valid()) {
+                sol::error e = r;
+                a.lastError = e.what();
+                LOGE("init error: %s", e.what());
+                a.clear[0] = 0.5f;
+                a.clear[1] = 0.0f;
+                a.clear[2] = 0.3f; // 빨간 배경 = 에러 (update와 동일)
+            }
+        }
+    }
 
     if (a.lua && a.lastError.empty()) {
         sol::protected_function upd = (*a.lua)["update"];
@@ -346,13 +391,17 @@ static void frame(App &a, float dt, TextRenderer &text) {
             if (!r.valid()) {
                 sol::error e = r;
                 a.lastError = e.what();
-                LOG("update error: %s", e.what());
+                LOGE("update error: %s", e.what());
                 a.clear[0] = 0.5f;
                 a.clear[1] = 0.0f;
                 a.clear[2] = 0.0f; // 빨간 배경 = 에러
             }
         }
     }
+    for (const TextCmd &t : a.texts)
+        a.text.draw(t.s.c_str(), t.x, t.y, t.size, t.color, (int)w, (int)h);
+    a.texts.clear();
+
     eglSwapBuffers(a.dpy, a.surf);
 }
 
@@ -362,8 +411,11 @@ static void onCmd(android_app *app, int32_t cmd) {
     case APP_CMD_INIT_WINDOW:
         if (app->window && !initGL(a, app->window))
             termGL(a);
+        else
+            a.text.init(a.font);
         break;
     case APP_CMD_TERM_WINDOW:
+        a.text.destroy();
         termGL(a);
         break;
     }
@@ -378,10 +430,7 @@ void android_main(android_app *app) {
     app->onAppCmd = onCmd;
     loadScript(a, DEFAULT_SCRIPT);
     a.listenFd = openServer();
-    Font font;
-    TextRenderer text;
-    font.load("fonts/pixel.ttf", 32.0f);
-    text.init(font);
+    a.font.load("fonts/pixel.ttf", 32.0f);
 
     double prev = now();
     while (true) {
@@ -409,7 +458,7 @@ void android_main(android_app *app) {
 
         pollSocket(a);
         if (a.ctx != EGL_NO_CONTEXT) {
-            frame(a, dt, text);
+            frame(a, dt);
         }
     }
 }

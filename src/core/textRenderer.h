@@ -14,8 +14,8 @@ class TextRenderer {
     void destroy();              // 컨텍스트가 사라지기 전에 호출
 
     // 화면 좌표(픽셀, 왼쪽 위 원점)의 (x, y) 베이스라인에 글자 그리기
-    void draw(const char *text, float x, float y, const glm::vec4 &color,
-              int screenW, int screenH);
+    void draw(const char *text, float x, float y, float scale,
+              const glm::vec4 &color, int screenW, int screenH);
 
   private:
     const Font *font_ = nullptr;

@@ -88,3 +88,14 @@ function camFront() end
 ---@param rect vec4
 ---@param color vec3
 function rect(rect, color) end
+
+---@param path string
+---@param size number
+function setFont(path, size) end
+
+---@param text string
+---@param x number
+---@param y number
+---@param size number
+---@param color vec4
+function setText(text, x, y, size, color) end

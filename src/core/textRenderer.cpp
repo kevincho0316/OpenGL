@@ -1,5 +1,6 @@
 #include "textRenderer.h"
 #include "core/shader.h"
+#include <GLES3/gl3.h>
 #include <glm/gtc/matrix_transform.hpp>
 
 bool TextRenderer::init(const Font &font) {
@@ -13,8 +14,8 @@ bool TextRenderer::init(const Font &font) {
     glBindTexture(GL_TEXTURE_2D, tex_);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, font.atlasWidth(), font.atlasHeight(),
                  0, GL_RED, GL_UNSIGNED_BYTE, font.atlasData());
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
@@ -59,7 +60,7 @@ void TextRenderer::destroy() {
     }
 }
 
-void TextRenderer::draw(const char *text, float x, float y,
+void TextRenderer::draw(const char *text, float x, float y, float scale,
                         const glm::vec4 &color, int screenW, int screenH) {
     if (!font_ || !tex_)
         return;
@@ -68,16 +69,17 @@ void TextRenderer::draw(const char *text, float x, float y,
     indices_.clear();
     unsigned int base = 0;
 
+    float cx = 0.0f, cy = 0.0f;
     for (const char *p = text; *p; ++p) {
         stbtt_aligned_quad q;
-        if (!font_->getQuad(*p, x, y, q))
+        if (!font_->getQuad(*p, cx, cy, q))
             continue;
+        float x0 = x + q.x0 * scale, x1 = x + q.x1 * scale;
+        float y0 = y + q.y0 * scale, y1 = y + q.y1 * scale;
 
         const float v[] = {
-            q.x0, q.y0, q.s0, q.t0, // 0 왼쪽 위
-            q.x1, q.y0, q.s1, q.t0, // 1 오른쪽 위
-            q.x1, q.y1, q.s1, q.t1, // 2 오른쪽 아래
-            q.x0, q.y1, q.s0, q.t1, // 3 왼쪽 아래
+            x0, y0, q.s0, q.t0, x1, y0, q.s1, q.t0,
+            x1, y1, q.s1, q.t1, x0, y1, q.s0, q.t1,
         };
         verts_.insert(verts_.end(), v, v + 16);
 
