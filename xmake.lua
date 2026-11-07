@@ -43,6 +43,7 @@ target("app")
         add_packages("glfw", "glm", "glad")
         if is_plat("windows") then
             add_links("opengl32")
+            add_syslinks("ws2_32")
         elseif is_plat("linux") then
             add_links("GL")
         elseif is_plat("macosx") then
