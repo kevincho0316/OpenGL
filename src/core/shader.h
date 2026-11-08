@@ -30,6 +30,7 @@ class Shader {
     void setBool(const std::string &n, bool v) const;
     void setInt(const std::string &n, int v) const;
     void setFloat(const std::string &n, float v) const;
+    void setVec2(const std::string &n, glm::vec2 v) const;
     void setVec3(const std::string &n, glm::vec3 v) const;
     void setVec4(const std::string &n, glm::vec4 v) const;
     void setMat4(const std::string &n, const glm::mat4 &m) const;

@@ -26,7 +26,7 @@ function update(dt)
     setTrans(t * 20, vec3.new(0.0, 0.0, 1.0),
         vec3.new(0.5, -0.5, 0.0));
 
-    setText(string.format("%.2f", t), 50, 100, 5, vec4.new(1, 1, 1, 1))
+    setText(string.format("%.2f", t), t, t, 5, vec4.new(1, 1, 1, 1))
 
 
     -- 카메라 테스트: 원점 주위를 공전하면서 위아래로 흔들림

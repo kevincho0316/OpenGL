@@ -17,6 +17,7 @@
 #include <android_native_app_glue.h>
 #include <vector>
 #define SOL_ALL_SAFETIES_ON 1
+#include "core/Grid.h"
 #include "core/camera.h"
 #include "core/file.h"
 #include "core/font.h"
@@ -84,6 +85,7 @@ struct App {
     float clear[3] = {0, 0, 0};
     Shader shader;
     Camera cam; // 스크립트 리로드해도 유지됨
+    Grid grid;
     Font font;
     TextRenderer text;
     std::vector<TextCmd> texts;
@@ -402,6 +404,8 @@ static void frame(App &a, float dt) {
         a.text.draw(t.s.c_str(), t.x, t.y, t.size, t.color, (int)w, (int)h);
     a.texts.clear();
 
+    a.grid.draw(a.cam, aspect);
+
     eglSwapBuffers(a.dpy, a.surf);
 }
 
@@ -431,6 +435,8 @@ void android_main(android_app *app) {
     loadScript(a, DEFAULT_SCRIPT);
     a.listenFd = openServer();
     a.font.load("fonts/pixel.ttf", 32.0f);
+
+    a.grid.init();
 
     double prev = now();
     while (true) {
