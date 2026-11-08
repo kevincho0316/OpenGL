@@ -7,7 +7,7 @@
 
 bool Grid::init() {
     float quad[] = {
-        -1, 0, -1, 1, 0, -1, 1, 0, 1, -1, 0, -1, 1, 0, 1, -1, 0, 1,
+        -1, -1, 0, 1, -1, 0, 1, 1, 0, -1, -1, 0, 1, 1, 0, -1, 1, 0,
     };
 
     shader_ = Shader("shaders/Grid.vert", "shaders/Grid.frag");
@@ -38,10 +38,14 @@ void Grid::destroy() {
 
 void Grid::draw(const Camera &cam, float aspect) {
     shader_.use();
-    shader_.setMat4("uViewProj", cam.projection(aspect));
-    shader_.setVec2("uCamXZ", glm::vec2(cam.position.x, cam.position.z));
+    shader_.setMat4("uViewProj", cam.projection(aspect) * cam.view());
     shader_.setFloat("uScale", scale);
+    shader_.setVec3("uCam", cam.position);
+    shader_.setInt("uPlane", plane);
+    glEnable(GL_BLEND);
     glBindVertexArray(vao_);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glDrawArrays(GL_TRIANGLES, 0, 6);
+    glDisable(GL_BLEND);
     glBindVertexArray(0);
 }

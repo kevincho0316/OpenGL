@@ -60,15 +60,20 @@ function update(dt)
     setTrans(t * 20, vec3.new(0.0, 0.0, 1.0),
         vec3.new(0.5, -0.5, 0.0));
 
-    setText(string.format("%.2f", t), t, t, 5, vec4.new(1, 1, 1, 1))
 
 
     -- 카메라 테스트: 원점 주위를 공전하면서 위아래로 흔들림
     camPerspective(60)
     local orbit = t * 0.8
-    camPos(vec3.new(math.sin(orbit) * 7, math.sin(t * 0.5) * 3, math.cos(orbit) * 7))
+    local radius = 7
+    local cp = vec3.new(math.sin(orbit) * radius * math.sin(t), math.sin(t * 0.5) * 3, math.cos(orbit) * radius)
+
+    camPos(cp)
     camLookAt(vec3.new(0, 0, 0))
 
+    setText("x: " .. string.format("%.2f", cp.x), 250.0, 250.0, 5, vec4.new(1, 1, 1, 1))
+    setText("y: " .. string.format("%.2f", cp.y), 250.0, 400.0, 5, vec4.new(1, 1, 1, 1))
+    setText("z: " .. string.format("%.2f", cp.z), 250.0, 550.0, 5, vec4.new(1, 1, 1, 1))
 
     local a = t * 2 * math.pi / 5 -- 5초에 한 바퀴
     rect(vec4.new(0, 0, 6, 13),
@@ -144,6 +149,8 @@ static bool initGL(App &a, ANativeWindow *win) {
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
 
     a.grid.init();
+    a.grid.setPlane(1); // XY 격자
+                        //
     LOG("GL init ok");
     return true;
 }

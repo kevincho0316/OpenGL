@@ -1,10 +1,10 @@
 precision highp float;
 
-in vec3 vWorldPos; // 버텍스 셰이더에서 넘겨받은 월드 좌표
+in vec2 vCoord;
 out vec4 fragColor;
 
 void main() {
-    vec2 coord = vWorldPos.xz; // 1칸 = 1.0 단위
+    vec2 coord = vCoord;
     vec2 d = fwidth(coord); // 화면 1픽셀당 좌표 변화량
     vec2 g = abs(fract(coord - 0.5) - 0.5) / d;
     float line = min(g.x, g.y); // 선까지 거리(픽셀 단위)

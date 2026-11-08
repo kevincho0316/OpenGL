@@ -1,15 +1,24 @@
 layout(location = 0) in vec3 aPos;
 
 uniform mat4 uViewProj;
-uniform vec2 uCamXZ;
+uniform vec3 uCam;
 uniform float uScale;
+uniform int uPlane; // 0 = XZ, 1 = XY, 2 = YZ
 
-out vec3 vWorldPos;
+out vec2 vCoord;
 
 void main() {
-    vec3 world = vec3(aPos.x * uScale + uCamXZ.x,
-            0.0,
-            aPos.z * uScale + uCamXZ.y);
-    vWorldPos = world;
+    vec2 p = aPos.xy * uScale;
+    vec3 world;
+    if (uPlane == 0) {
+        world = vec3(p.x + uCam.x, 0.0, p.y + uCam.z);
+        vCoord = world.xz;
+    } else if (uPlane == 1) {
+        world = vec3(p.x + uCam.x, p.y + uCam.y, 0.0);
+        vCoord = world.xy;
+    } else {
+        world = vec3(0.0, p.x + uCam.y, p.y + uCam.z);
+        vCoord = world.yz;
+    }
     gl_Position = uViewProj * vec4(world, 1.0);
 }
