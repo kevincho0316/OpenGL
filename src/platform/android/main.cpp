@@ -42,28 +42,37 @@ static const char *DEFAULT_SCRIPT = R"LUA(
 
 local t = 0
 function init()
-    setFont('fonts/pixel.ttf', 35.0)
+    --setFont('/fonts/pixel.ttf', 35.0)
 end
 
 function update(dt)
-  t = t + dt
-  clear_color(0.0, 0.0, 0.0)
+    t = t + dt
+    clear_color(0.0, 0.0, 0.0)
 
-  setFloat("uTime", t)
-  setFloat("uToffset", 0.06)
-  setFloat("uboost", 2.0)
-  setFloat("ucontrast", 0.8)
-  setFloat("uConCenter", 0.8)
-  setFloat("uradius", 0.5)
-  setFloat("ufadeRad", 0.5)
-  setFloat("NOISE_AMT", 0.6)
-  setTrans( 180.0, vec3.new(0.0, 0.0, 1.0),
-                   vec3.new(0.5, -0.5, 0.0));
+    setFloat("uTime", t)
+    setFloat("uToffset", 0.06)
+    setFloat("uboost", 2.0)
+    setFloat("ucontrast", 0.8)
+    setFloat("uConCenter", 0.8)
+    setFloat("uradius", 0.5)
+    setFloat("ufadeRad", 0.5)
+    setFloat("NOISE_AMT", 0.6)
+    setTrans(t * 20, vec3.new(0.0, 0.0, 1.0),
+        vec3.new(0.5, -0.5, 0.0));
+
+    setText(string.format("%.2f", t), t, t, 5, vec4.new(1, 1, 1, 1))
 
 
-  local a = t * 2 * math.pi / 5   -- 5초에 한 바퀴
-  rect(vec4.new(0, 0, 6, 13),
-       vec3.new(0.5 + math.sin(a), 0.6, 0.85))
+    -- 카메라 테스트: 원점 주위를 공전하면서 위아래로 흔들림
+    camPerspective(60)
+    local orbit = t * 0.8
+    camPos(vec3.new(math.sin(orbit) * 7, math.sin(t * 0.5) * 3, math.cos(orbit) * 7))
+    camLookAt(vec3.new(0, 0, 0))
+
+
+    local a = t * 2 * math.pi / 5 -- 5초에 한 바퀴
+    rect(vec4.new(0, 0, 6, 13),
+        vec3.new(0.5 + math.sin(a), 0.6, 0.85))
 end
 )LUA";
 
@@ -133,6 +142,8 @@ static bool initGL(App &a, ANativeWindow *win) {
     glBufferData(GL_ARRAY_BUFFER, sizeof quad, quad, GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+    a.grid.init();
     LOG("GL init ok");
     return true;
 }
@@ -141,6 +152,7 @@ static void termGL(App &a) {
     if (a.dpy == EGL_NO_DISPLAY)
         return;
     if (a.ctx != EGL_NO_CONTEXT) {
+        a.grid.destroy();
         glDeleteProgram(a.shader.ID);
         glDeleteBuffers(1, &a.vbo);
         glDeleteVertexArrays(1, &a.vao);
@@ -435,8 +447,6 @@ void android_main(android_app *app) {
     loadScript(a, DEFAULT_SCRIPT);
     a.listenFd = openServer();
     a.font.load("fonts/pixel.ttf", 32.0f);
-
-    a.grid.init();
 
     double prev = now();
     while (true) {

@@ -1,3 +1,5 @@
+precision highp float;
+
 in vec3 vWorldPos; // 버텍스 셰이더에서 넘겨받은 월드 좌표
 out vec4 fragColor;
 

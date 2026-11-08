@@ -27,7 +27,14 @@ bool Grid::init() {
     return true;
 };
 
-void Grid::destroy() {}
+void Grid::destroy() {
+    if (vbo_)
+        glDeleteBuffers(1, &vbo_);
+    if (vao_)
+        glDeleteVertexArrays(1, &vao_);
+    shader_.destroy();
+    vao_ = vbo_ = 0;
+}
 
 void Grid::draw(const Camera &cam, float aspect) {
     shader_.use();
