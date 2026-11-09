@@ -3,6 +3,7 @@
 //
 // 스크립트 전송: Termux에서 ./push.sh  (127.0.0.1:7777, NUL 바이트로 끝)
 #include "../../gl.h"
+#include "core/arrow2D.h"
 #include "glm/ext/vector_float3.hpp"
 #include "glm/ext/vector_float4.hpp"
 #include <EGL/egl.h>
@@ -108,6 +109,7 @@ struct App {
     TextRenderer textRenderer;
     std::vector<TextCmd> texts;
     std::vector<inputEvent> inputEvents;
+    Arrow2D arrow2D;
 
     // Lua (GL 객체를 갖지 않으므로 컨텍스트 손실과 무관하게 유지)
     std::unique_ptr<sol::state> lua;
@@ -190,7 +192,8 @@ static bool initGL(App &a, ANativeWindow *win) {
 
     a.grid.init();
     a.grid.setPlane(1); // XY 격자
-                        //
+
+    a.arrow2D.init();
     LOG("GL init ok");
     return true;
 }
@@ -451,6 +454,8 @@ static void frame(App &a, float dt) {
         }
         a.texts.push_back({buf, i.x, i.y, 5, glm::vec4(1)});
     }
+
+    a.arrow2D.draw(glm::vec2(1.0f), glm::vec2(1.0f));
 
     if (a.lua && a.lastError.empty() && a.needInit) {
         a.needInit = false;

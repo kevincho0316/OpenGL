@@ -1,0 +1,47 @@
+#pragma once
+
+#include "../gl.h"
+#include "camera.h"
+#include "glm/ext/vector_float4.hpp"
+#include "glm/fwd.hpp"
+#include "shader.h"
+#include <GLES3/gl3.h>
+#include <glm/glm.hpp>
+
+class Arrow2D {
+  private:
+    Shader shader_;
+    GLuint vao_, vbo_;
+    glm::vec2 anchor_;
+    glm::vec2 dir_;
+    glm::vec4 color_ = glm::vec4(1.0f);
+    float vertices_[18] = {
+        // 몸통 (삼각형 2개)
+        -0.5f,
+        -0.1f,
+        0.2f,
+        -0.1f,
+        0.2f,
+        0.1f,
+        -0.5f,
+        -0.1f,
+        0.2f,
+        0.1f,
+        -0.5f,
+        0.1f,
+        // 머리 ()
+        0.2f,
+        -0.3f,
+        0.6f,
+        0.0f,
+        0.2f,
+        0.3f,
+    };
+
+  public:
+    Arrow2D() = default;
+    ~Arrow2D() { destroy(); }
+    bool init();
+    void draw(glm::vec2 an, glm::vec2 dir);
+    void destroy();
+};
