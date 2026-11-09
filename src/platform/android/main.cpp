@@ -4,6 +4,7 @@
 // 스크립트 전송: Termux에서 ./push.sh  (127.0.0.1:7777, NUL 바이트로 끝)
 #include "../../gl.h"
 #include "core/arrow2D.h"
+#include "glm/ext/vector_float2.hpp"
 #include "glm/ext/vector_float3.hpp"
 #include "glm/ext/vector_float4.hpp"
 #include <EGL/egl.h>
@@ -109,7 +110,10 @@ struct App {
     TextRenderer textRenderer;
     std::vector<TextCmd> texts;
     std::vector<inputEvent> inputEvents;
+
     Arrow2D arrow2D;
+    bool dragging = false;
+    glm::vec2 dragStart{0.0f}, dragCur{0.0f};
 
     // Lua (GL 객체를 갖지 않으므로 컨텍스트 손실과 무관하게 유지)
     std::unique_ptr<sol::state> lua;
@@ -193,7 +197,7 @@ static bool initGL(App &a, ANativeWindow *win) {
     a.grid.init();
     a.grid.setPlane(1); // XY 격자
 
-    a.arrow2D.init();
+    // a.arrow2D.init();
     LOG("GL init ok");
     return true;
 }
@@ -434,13 +438,25 @@ static void frame(App &a, float dt) {
     char buf[64];
     for (inputEvent i : a.inputEvents) {
         switch (i.inputType) {
+        case InputType::PointerDown:
+            a.dragging = true;
+            a.dragStart = a.dragCur = glm::vec2(i.x, i.y);
+            break;
+        case InputType::PointerMove:
+            a.dragCur = glm::vec2(i.x, i.y);
+            break;
+        case InputType::PointerUp:
+            a.dragging = false;
+            break;
+        default:
+            break;
+        }
+        switch (i.inputType) {
         case InputType::PointerDown: {
             snprintf(buf, sizeof(buf), "DOWN::(%.0f,%.0f)", i.x, i.y);
             break;
         }
         case InputType::PointerUp: {
-            snprintf(buf, sizeof(buf), "UP::(%.0f,%.0f)", i.x, i.y);
-            a.inputEvents.clear();
             break;
         }
         case InputType::PointerMove: {
@@ -452,10 +468,14 @@ static void frame(App &a, float dt) {
             break;
         }
         }
-        a.texts.push_back({buf, i.x, i.y, 5, glm::vec4(1)});
-    }
+        a.inputEvents.clear();
+        glm::vec2 d = a.dragCur - a.dragStart;
 
-    a.arrow2D.draw(glm::vec2(1.0f), glm::vec2(1.0f));
+        float len = glm::length(d);
+        if (a.dragging && len > 1.0f) {
+            a.arrow2D.draw(a.dragStart, d, len, glm::vec2(w, h));
+        }
+    }
 
     if (a.lua && a.lastError.empty() && a.needInit) {
         a.needInit = false;

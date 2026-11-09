@@ -2,6 +2,7 @@
 
 #include "../gl.h"
 #include "camera.h"
+#include "glm/ext/vector_float2.hpp"
 #include "glm/ext/vector_float4.hpp"
 #include "glm/fwd.hpp"
 #include "shader.h"
@@ -11,10 +12,14 @@
 class Arrow2D {
   private:
     Shader shader_;
+
     GLuint vao_, vbo_;
     glm::vec2 anchor_;
     glm::vec2 dir_;
+    glm::vec2 screen_;
+    float size_;
     glm::vec4 color_ = glm::vec4(1.0f);
+
     float vertices_[18] = {
         // 몸통 (삼각형 2개)
         -0.5f,
@@ -42,6 +47,6 @@ class Arrow2D {
     Arrow2D() = default;
     ~Arrow2D() { destroy(); }
     bool init();
-    void draw(glm::vec2 an, glm::vec2 dir);
+    void draw(glm::vec2 an, glm::vec2 dir, float s, glm::vec2 screen);
     void destroy();
 };

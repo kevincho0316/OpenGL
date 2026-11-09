@@ -1,4 +1,4 @@
-uniform vec4 SingleColor;
+uniform vec4 uSingleColor;
 out vec4 FragColor;
 
 void main() {
