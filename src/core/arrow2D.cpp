@@ -1,8 +1,10 @@
 #include "arrow2D.h"
 #include "glm/fwd.hpp"
 #include "platform/android/log.h"
+#include <chrono>
+
 bool Arrow2D::init() {
-    shader_ = Shader("shaders/arrow2D.vert", "shaders/singleColor.frag");
+    shader_ = Shader("shaders/arrow2D.vert", "shaders/stripeColor.frag");
 
     glGenVertexArrays(1, &vao_);
     glGenBuffers(1, &vbo_);
@@ -22,7 +24,8 @@ void Arrow2D::draw(glm::vec2 an, glm::vec2 dir, float s, glm::vec2 screen) {
     size_ = s;
     screen_ = screen;
     shader_.use();
-    LOGI("A use=0x%x", glGetError());
+
+    static const auto t0 = std::chrono::steady_clock::now();
 
     shader_.setVec2("uScreen", screen_); // 화면 크기 (픽셀)
     shader_.setVec2("uAnchor",
@@ -30,8 +33,14 @@ void Arrow2D::draw(glm::vec2 an, glm::vec2 dir, float s, glm::vec2 screen) {
     shader_.setVec2("uDir", dir_); // 화살표 꼬리 위치 (픽셀, 왼쪽 위 원점)
     shader_.setFloat("uSize", size_);
 
-    shader_.setVec4("uSingleColor", color_);
-    LOGI("B uniforms=0x%x", glGetError());
+    shader_.setVec4("uStripeColor", color_);
+    shader_.setFloat("uGap", 45.0f);
+    shader_.setFloat("uStripeSpeed", 105.0f);
+
+    float t =
+        std::chrono::duration<float>(std::chrono::steady_clock::now() - t0)
+            .count();
+    shader_.setFloat("uTime", t);
 
     glEnable(GL_BLEND);
     glBindVertexArray(vao_);
@@ -39,7 +48,6 @@ void Arrow2D::draw(glm::vec2 an, glm::vec2 dir, float s, glm::vec2 screen) {
     glDrawArrays(GL_TRIANGLES, 0, 9);
     glDisable(GL_BLEND);
     glBindVertexArray(0);
-    LOGI("C draw=0x%x", glGetError());
 }
 
 void Arrow2D::destroy() {

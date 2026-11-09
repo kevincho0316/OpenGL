@@ -13,7 +13,7 @@ class Arrow2D {
   private:
     Shader shader_;
 
-    GLuint vao_, vbo_;
+    GLuint vao_, vbo_ = 0;
     glm::vec2 anchor_;
     glm::vec2 dir_;
     glm::vec2 screen_;

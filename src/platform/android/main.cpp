@@ -197,7 +197,7 @@ static bool initGL(App &a, ANativeWindow *win) {
     a.grid.init();
     a.grid.setPlane(1); // XY 격자
 
-    // a.arrow2D.init();
+    a.arrow2D.init();
     LOG("GL init ok");
     return true;
 }
@@ -469,12 +469,6 @@ static void frame(App &a, float dt) {
         }
         }
         a.inputEvents.clear();
-        glm::vec2 d = a.dragCur - a.dragStart;
-
-        float len = glm::length(d);
-        if (a.dragging && len > 1.0f) {
-            a.arrow2D.draw(a.dragStart, d, len, glm::vec2(w, h));
-        }
     }
 
     if (a.lua && a.lastError.empty() && a.needInit) {
@@ -512,6 +506,13 @@ static void frame(App &a, float dt) {
         a.textRenderer.draw(t.s.c_str(), t.x, t.y, t.size, t.color, (int)w,
                             (int)h);
     a.texts.clear();
+
+    glm::vec2 d = a.dragCur - a.dragStart;
+
+    float len = glm::length(d);
+    if (a.dragging && len > 1.0f) {
+        a.arrow2D.draw(a.dragStart, d, len, glm::vec2(w, h));
+    }
 
     a.grid.draw(a.cam, aspect);
 
