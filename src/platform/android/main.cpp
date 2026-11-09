@@ -7,6 +7,9 @@
 #include "glm/ext/vector_float4.hpp"
 #include <EGL/egl.h>
 
+#include <android/input.h>
+#include <cstdint>
+#include <cstdio>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -21,6 +24,7 @@
 #include "core/camera.h"
 #include "core/file.h"
 #include "core/font.h"
+#include "core/input.h"
 #include "core/shader.h"
 #include "core/textRenderer.h"
 
@@ -101,8 +105,9 @@ struct App {
     Camera cam; // 스크립트 리로드해도 유지됨
     Grid grid;
     Font font;
-    TextRenderer text;
+    TextRenderer textRenderer;
     std::vector<TextCmd> texts;
+    std::vector<inputEvent> inputEvents;
 
     // Lua (GL 객체를 갖지 않으므로 컨텍스트 손실과 무관하게 유지)
     std::unique_ptr<sol::state> lua;
@@ -111,6 +116,41 @@ struct App {
     std::string printBuf;  // print() 출력 (status 로 조회)
     int listenFd = -1;
 };
+
+// ---------------- INPUT ----------------
+static int32_t onInput(android_app *app, AInputEvent *event) {
+    if (AInputEvent_getType(event) != AINPUT_EVENT_TYPE_MOTION) {
+        return 0;
+    }
+    int32_t action = AMotionEvent_getAction(event) & AMOTION_EVENT_ACTION_MASK;
+    float x = AMotionEvent_getX(event, 0);
+    float y = AMotionEvent_getY(event, 0);
+    App *a = (App *)app->userData;
+    // Debug purpose
+    char buf[64];
+    switch (action) {
+    case AMOTION_EVENT_ACTION_DOWN: {
+        a->inputEvents.push_back({InputType::PointerDown, 0, x, y, 0});
+        snprintf(buf, sizeof(buf), "INPUT::Action::DOWN::(%.0f,%.0f)", x, y);
+        LOGI("%s", buf);
+        break;
+    }
+    case AMOTION_EVENT_ACTION_UP: {
+        a->inputEvents.push_back({InputType::PointerUp, 0, x, y, 0});
+        snprintf(buf, sizeof(buf), "INPUT::Action::UP::(%.0f,%.0f)", x, y);
+        LOGI("%s", buf);
+        break;
+    }
+    case AMOTION_EVENT_ACTION_MOVE: {
+        a->inputEvents.push_back({InputType::PointerMove, 0, x, y, 0});
+        snprintf(buf, sizeof(buf), "INPUT::Action::MOVE::(%.0f,%.0f)", x, y);
+        LOGI("%s", buf);
+        break;
+    }
+    }
+    /////////////////////
+    return 1;
+}
 
 // ---------------- GL ----------------
 static bool initGL(App &a, ANativeWindow *win) {
@@ -257,7 +297,7 @@ static std::string loadScript(App &a, const std::string &src) {
         if (!a.font.load(p.c_str(), size))
             return;                  // 실패 시 기존 텍스처 유지
         if (a.ctx != EGL_NO_CONTEXT) // 컨텍스트가 있으면 바로 텍스처 갱신
-            a.text.init(a.font);
+            a.textRenderer.init(a.font);
     });
 
     L->set_function("setText", [&a](std::string s, float x, float y, float size,
@@ -388,6 +428,30 @@ static void frame(App &a, float dt) {
     a.shader.setMat4("view", a.cam.view());
     a.shader.setMat4("projection", a.cam.projection(aspect));
 
+    char buf[64];
+    for (inputEvent i : a.inputEvents) {
+        switch (i.inputType) {
+        case InputType::PointerDown: {
+            snprintf(buf, sizeof(buf), "DOWN::(%.0f,%.0f)", i.x, i.y);
+            break;
+        }
+        case InputType::PointerUp: {
+            snprintf(buf, sizeof(buf), "UP::(%.0f,%.0f)", i.x, i.y);
+            a.inputEvents.clear();
+            break;
+        }
+        case InputType::PointerMove: {
+            snprintf(buf, sizeof(buf), "MOVE::(%.0f,%.0f)", i.x, i.y);
+            break;
+        }
+        default: {
+            snprintf(buf, sizeof(buf), "INPUT::Action::Key::(%c)", i.key);
+            break;
+        }
+        }
+        a.texts.push_back({buf, i.x, i.y, 5, glm::vec4(1)});
+    }
+
     if (a.lua && a.lastError.empty() && a.needInit) {
         a.needInit = false;
         sol::protected_function ini = (*a.lua)["init"];
@@ -420,7 +484,8 @@ static void frame(App &a, float dt) {
         }
     }
     for (const TextCmd &t : a.texts)
-        a.text.draw(t.s.c_str(), t.x, t.y, t.size, t.color, (int)w, (int)h);
+        a.textRenderer.draw(t.s.c_str(), t.x, t.y, t.size, t.color, (int)w,
+                            (int)h);
     a.texts.clear();
 
     a.grid.draw(a.cam, aspect);
@@ -435,10 +500,10 @@ static void onCmd(android_app *app, int32_t cmd) {
         if (app->window && !initGL(a, app->window))
             termGL(a);
         else
-            a.text.init(a.font);
+            a.textRenderer.init(a.font);
         break;
     case APP_CMD_TERM_WINDOW:
-        a.text.destroy();
+        a.textRenderer.destroy();
         termGL(a);
         break;
     }
@@ -451,6 +516,8 @@ void android_main(android_app *app) {
     App a;
     app->userData = &a;
     app->onAppCmd = onCmd;
+    app->onInputEvent = onInput;
+
     loadScript(a, DEFAULT_SCRIPT);
     a.listenFd = openServer();
     a.font.load("fonts/pixel.ttf", 32.0f);
