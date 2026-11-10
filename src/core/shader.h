@@ -25,6 +25,7 @@ class Shader {
     std::string readFile(const std::string &path);
     std::string preprocess(const std::string &path,
                            std::set<std::string> &seen);
+
     void use() const;
     void destroy(); // 컨텍스트 손실 / 리로드 / 종료 시 호출
     void setBool(const std::string &n, bool v) const;

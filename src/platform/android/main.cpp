@@ -104,11 +104,14 @@ struct App {
     GLuint vao = 0, vbo = 0;
     float clear[3] = {0, 0, 0};
     Shader shader;
+
     Camera cam; // 스크립트 리로드해도 유지됨
     Grid grid;
     Font font;
     TextRenderer textRenderer;
+
     std::vector<TextCmd> texts;
+    std::vector<ShaderUniform> uniforms;
     std::vector<inputEvent> inputEvents;
 
     Arrow2D arrow2D;
@@ -299,6 +302,7 @@ static std::string loadScript(App &a, const std::string &src) {
     });
     L->set_function("camGetPos", [&a]() { return a.cam.position; });
     L->set_function("camFront", [&a]() { return a.cam.front(); });
+
     //-------text----------
     L->set_function("setFont", [&a](const std::string &p, float size) {
         if (!a.font.load(p.c_str(), size))
@@ -312,6 +316,7 @@ static std::string loadScript(App &a, const std::string &src) {
         a.texts.push_back({s, x, y, size, color});
     });
 
+    //-------Rect----------
     L->set_function("rect", [&a](glm::vec4 rect, glm::vec3 color) {
         if (!a.shader.ID)
             return;

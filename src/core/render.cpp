@@ -1,0 +1,61 @@
+#include "core/render.h"
+#include <algorithm>
+
+void Renderer::setPassState(Pass p) {
+    switch (p) {
+    case Pass::Opaque:
+        glEnable(GL_DEPTH_TEST);
+        glDepthMask(GL_TRUE);
+        glDisable(GL_BLEND);
+        break;
+    case Pass::Transparent:
+        glEnable(GL_DEPTH_TEST);
+        glDepthMask(GL_FALSE); // 깊이는 검사만, 쓰지는 않음
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        break;
+    case Pass::Overlay:
+    case Pass::UI:
+        glDisable(GL_DEPTH_TEST); // 항상 맨 위에
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        break;
+    }
+}
+
+void Renderer::flush() {
+    // 패스 순으로 정렬. stable이라 같은 패스 안에서는 submit 순서 유지
+    std::stable_sort(
+        queue_.begin(), queue_.end(),
+        [](const DrawCmd &a, const DrawCmd &b) { return a.pass < b.pass; });
+
+    bool first = true;
+    Pass curPass{};
+    const Shader *bound = nullptr;
+
+    for (const DrawCmd &c : queue_) {
+        if (!c.shader || !c.shader->ID)
+            continue; // 컨텍스트 손실 직후 등
+
+        if (first || c.pass != curPass) {
+            setPassState(c.pass);
+            curPass = c.pass;
+            first = false;
+        }
+        if (c.shader != bound) {
+            c.shader->use();
+            for (const auto &u : frameUniforms)
+                apply(*c.shader, u);
+            bound = c.shader;
+        }
+        for (const auto &u : c.uniforms)
+            apply(*c.shader, u);
+
+        glBindVertexArray(c.vao);
+        glDrawArrays(c.mode, c.first, c.count);
+    }
+
+    glBindVertexArray(0);
+    glDepthMask(GL_TRUE); // 다음 프레임 glClear가 깊이를 지울 수 있도록
+    queue_.clear();
+}
