@@ -31,25 +31,30 @@ function vec4.new(x, y, z, w) end
 ---@param b number
 function clear_color(r, g, b) end
 
+---@param shader string
 ---@param name string
 ---@param v boolean
-function setBool(name, v) end
+function setBool(shader, name, v) end
 
+---@param shader string
 ---@param name string
 ---@param v integer
-function setInt(name, v) end
+function setInt(shader, name, v) end
 
+---@param shader string
 ---@param name string
 ---@param v number
-function setFloat(name, v) end
+function setFloat(shader, name, v) end
 
+---@param shader string
 ---@param name string
 ---@param v vec3
-function setVec3(name, v) end
+function setVec3(shader, name, v) end
 
+---@param shader string
 ---@param name string
 ---@param v vec4
-function setVec4(name, v) end
+function setVec4(shader, name, v) end
 
 ---@param angle number
 ---@param axis vec3
@@ -85,9 +90,10 @@ function camGetPos() end
 ---@return vec3
 function camFront() end
 
+---@param shader string
 ---@param rect vec4
 ---@param color vec3
-function rect(rect, color) end
+function rect(shader, rect, color) end
 
 ---@param path string
 ---@param size number

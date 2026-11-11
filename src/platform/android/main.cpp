@@ -9,6 +9,7 @@
 #include "glm/ext/vector_float4.hpp"
 #include <EGL/egl.h>
 
+#include <GLES3/gl3.h>
 #include <android/input.h>
 #include <cstdint>
 #include <cstdio>
@@ -20,19 +21,15 @@
 #include <android/asset_manager.h>
 #include <android/log.h>
 #include <android_native_app_glue.h>
-#include <vector>
 #define SOL_ALL_SAFETIES_ON 1
-#include "core/Grid.h"
-#include "core/camera.h"
+
+#include "core/App.h"
 #include "core/file.h"
-#include "core/font.h"
-#include "core/input.h"
+#include "core/luaScript.h"
 #include "core/shader.h"
-#include "core/textRenderer.h"
 
 #include <arpa/inet.h>
 #include <fcntl.h>
-#include <memory>
 #include <netinet/in.h>
 #include <sol/sol.hpp>
 #include <string>
@@ -52,18 +49,16 @@ function init()
 end
 
 function update(dt)
-    t = t + dt
     clear_color(0.0, 0.0, 0.0)
 
-    setFloat("uTime", t)
-    setFloat("uToffset", 0.06)
-    setFloat("uboost", 2.0)
-    setFloat("ucontrast", 0.8)
-    setFloat("uConCenter", 0.8)
-    setFloat("uradius", 0.5)
-    setFloat("ufadeRad", 0.5)
-    setFloat("NOISE_AMT", 0.6)
-    setTrans(t * 20, vec3.new(0.0, 0.0, 1.0),
+    setFloat(("main","uToffset", 0.06)
+    setFloat(("main","uboost", 2.0)
+    setFloat(("main","ucontrast", 0.8)
+    setFloat(("main","uConCenter", 0.8)
+    setFloat(("main","uradius", 0.5)
+    setFloat(("main","ufadeRad", 0.5)
+    setFloat(("main","NOISE_AMT", 0.6)
+    setTrans("main",(t * 20, vec3.new(0.0, 0.0, 1.0),
         vec3.new(0.5, -0.5, 0.0));
 
 
@@ -77,9 +72,9 @@ function update(dt)
     camPos(cp)
     camLookAt(vec3.new(0, 0, 0))
 
-    setText("x: " .. string.format("%.2f", cp.x), 250.0, 250.0, 5, vec4.new(1, 1, 1, 1))
-    setText("y: " .. string.format("%.2f", cp.y), 250.0, 400.0, 5, vec4.new(1, 1, 1, 1))
-    setText("z: " .. string.format("%.2f", cp.z), 250.0, 550.0, 5, vec4.new(1, 1, 1, 1))
+    --setText("x: " .. string.format("%.2f", cp.x), 250.0, 250.0, 5, vec4.new(1, 1, 1, 1))
+    --setText("y: " .. string.format("%.2f", cp.y), 250.0, 400.0, 5, vec4.new(1, 1, 1, 1))
+    --setText("z: " .. string.format("%.2f", cp.z), 250.0, 550.0, 5, vec4.new(1, 1, 1, 1))
 
     local a = t * 2 * math.pi / 5 -- 5초에 한 바퀴
     rect(vec4.new(0, 0, 6, 13),
@@ -89,42 +84,6 @@ end
 
 static const char *VsDir = "shaders/VertexShader.glsl";
 static const char *FsDir = "shaders/ButterflyFgSh.glsl";
-
-struct TextCmd {
-    std::string s;
-    float x, y, size;
-    glm::vec4 color;
-};
-
-struct App {
-    // EGL / GL (창이 없어지면 전부 해제 → 다시 생성)
-    EGLDisplay dpy = EGL_NO_DISPLAY;
-    EGLSurface surf = EGL_NO_SURFACE;
-    EGLContext ctx = EGL_NO_CONTEXT;
-    GLuint vao = 0, vbo = 0;
-    float clear[3] = {0, 0, 0};
-    Shader shader;
-
-    Camera cam; // 스크립트 리로드해도 유지됨
-    Grid grid;
-    Font font;
-    TextRenderer textRenderer;
-
-    std::vector<TextCmd> texts;
-    std::vector<ShaderUniform> uniforms;
-    std::vector<inputEvent> inputEvents;
-
-    Arrow2D arrow2D;
-    bool dragging = false;
-    glm::vec2 dragStart{0.0f}, dragCur{0.0f};
-
-    // Lua (GL 객체를 갖지 않으므로 컨텍스트 손실과 무관하게 유지)
-    std::unique_ptr<sol::state> lua;
-    bool needInit = false;
-    std::string lastError; // 런타임 에러 (status 로 조회)
-    std::string printBuf;  // print() 출력 (status 로 조회)
-    int listenFd = -1;
-};
 
 // ---------------- INPUT ----------------
 static int32_t onInput(android_app *app, AInputEvent *event) {
@@ -186,7 +145,7 @@ static bool initGL(App &a, ANativeWindow *win) {
     if (!eglMakeCurrent(a.dpy, a.surf, a.surf, a.ctx))
         return false;
 
-    a.shader = Shader(VsDir, FsDir);
+    a.shaders.add("main", VsDir, FsDir);
 
     const float quad[] = {-0.5f, -0.5f, 0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f};
     glGenVertexArrays(1, &a.vao);
@@ -201,6 +160,7 @@ static bool initGL(App &a, ANativeWindow *win) {
     a.grid.setPlane(1); // XY 격자
 
     a.arrow2D.init();
+    a.shaders.recreateAll();
     LOG("GL init ok");
     return true;
 }
@@ -210,11 +170,10 @@ static void termGL(App &a) {
         return;
     if (a.ctx != EGL_NO_CONTEXT) {
         a.grid.destroy();
-        glDeleteProgram(a.shader.ID);
+        a.shaders.destroyAll();
         glDeleteBuffers(1, &a.vbo);
         glDeleteVertexArrays(1, &a.vao);
     }
-    a.shader.ID = a.vao = a.vbo = 0;
     eglMakeCurrent(a.dpy, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
     if (a.ctx != EGL_NO_CONTEXT)
         eglDestroyContext(a.dpy, a.ctx);
@@ -224,136 +183,8 @@ static void termGL(App &a) {
     a.dpy = EGL_NO_DISPLAY;
     a.surf = EGL_NO_SURFACE;
     a.ctx = EGL_NO_CONTEXT;
+    a.shaders.destroyAll();
 }
-
-void setTrans(App &a, float angle, glm::vec3 angleVec, glm::vec3 scale) {
-    glm::mat4 trans = glm::mat4(1.0f);
-    trans = glm::rotate(trans, glm::radians(angle), angleVec);
-    trans = glm::scale(trans, scale);
-    unsigned int transformLoc = glGetUniformLocation(a.shader.ID, "transform");
-    glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
-}
-
-// ---------------- Lua ----------------
-// 성공 시 "ok", 실패 시 에러 메시지. 실패하면 이전 스크립트 유지.
-static std::string loadScript(App &a, const std::string &src) {
-    auto L = std::make_unique<sol::state>();
-    L->open_libraries(sol::lib::base, sol::lib::math, sol::lib::string,
-                      sol::lib::table);
-
-    L->new_usertype<glm::vec3>(
-        "vec3",
-        sol::constructors<glm::vec3(), glm::vec3(float, float, float)>(), "x",
-        &glm::vec3::x, "y", &glm::vec3::y, "z", &glm::vec3::z);
-
-    L->new_usertype<glm::vec4>(
-        "vec4",
-        sol::constructors<glm::vec4(), glm::vec4(float, float, float, float)>(),
-        "x", &glm::vec4::x, "y", &glm::vec4::y, "z", &glm::vec4::z, "w",
-        &glm::vec4::w);
-
-    L->set_function("clear_color", [&a](float r, float g, float b) {
-        a.clear[0] = r;
-        a.clear[1] = g;
-        a.clear[2] = b;
-    });
-
-    L->set_function("setBool", [&a](const std::string &n, bool v) {
-        a.shader.setBool(n, v);
-    });
-
-    L->set_function(
-        "setInt", [&a](const std::string &n, int v) { a.shader.setInt(n, v); });
-
-    L->set_function("setFloat", [&a](const std::string &n, float v) {
-        a.shader.setFloat(n, v);
-    });
-
-    L->set_function("setVec3", [&a](const std::string &n, glm::vec3 v) {
-        a.shader.setVec3(n, v);
-    });
-    L->set_function("setVec4", [&a](const std::string &n, glm::vec4 v) {
-        a.shader.setVec4(n, v);
-    });
-
-    L->set_function("setTrans",
-                    [&a](float angle, glm::vec3 axis, glm::vec3 scale) {
-                        setTrans(a, angle, axis, scale);
-                    });
-
-    // ---- camera ----
-    L->set_function("camPos", [&a](glm::vec3 p) { a.cam.position = p; });
-    L->set_function("camRot", [&a](float yaw, float pitch) {
-        a.cam.setRotation(yaw, pitch);
-    });
-    L->set_function("camLookAt", [&a](glm::vec3 t) { a.cam.lookAt(t); });
-    L->set_function("camMove", [&a](glm::vec3 d) { a.cam.move(d); });
-    L->set_function("camPerspective", [&a](sol::optional<float> fov) {
-        a.cam.perspective = true;
-        a.cam.fov = fov.value_or(45.0f);
-    });
-    L->set_function("camOrtho", [&a](sol::optional<float> size) {
-        a.cam.perspective = false;
-        a.cam.orthoSize = size.value_or(1.0f);
-    });
-    L->set_function("camClip", [&a](float n, float f) {
-        a.cam.zNear = n;
-        a.cam.zFar = f;
-    });
-    L->set_function("camGetPos", [&a]() { return a.cam.position; });
-    L->set_function("camFront", [&a]() { return a.cam.front(); });
-
-    //-------text----------
-    L->set_function("setFont", [&a](const std::string &p, float size) {
-        if (!a.font.load(p.c_str(), size))
-            return;                  // 실패 시 기존 텍스처 유지
-        if (a.ctx != EGL_NO_CONTEXT) // 컨텍스트가 있으면 바로 텍스처 갱신
-            a.textRenderer.init(a.font);
-    });
-
-    L->set_function("setText", [&a](std::string s, float x, float y, float size,
-                                    glm::vec4 color) {
-        a.texts.push_back({s, x, y, size, color});
-    });
-
-    //-------Rect----------
-    L->set_function("rect", [&a](glm::vec4 rect, glm::vec3 color) {
-        if (!a.shader.ID)
-            return;
-
-        a.shader.setVec4("uRect", rect);
-        a.shader.setVec3("uColor", color);
-
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-    });
-
-    L->set_function("print", [&a](sol::this_state ts, sol::variadic_args va) {
-        sol::state_view lv(ts);
-        sol::protected_function tostr = lv["tostring"];
-        std::string line;
-        for (auto v : va) {
-            std::string s = tostr(v);
-            line += s + "\t";
-        }
-        LOG("lua: %s", line.c_str());
-        a.printBuf += line + "\n";
-        if (a.printBuf.size() > 4096)
-            a.printBuf.erase(0, a.printBuf.size() - 4096);
-    });
-
-    auto r = L->safe_script(src, sol::script_pass_on_error);
-    if (!r.valid()) {
-        sol::error e = r;
-        LOG("load error: %s", e.what());
-        return std::string("load error: ") + e.what();
-    }
-    a.lua = std::move(L);
-    a.lastError.clear();
-    a.needInit = true;
-    LOG("script loaded (%zu bytes)", src.size());
-    return "ok";
-}
-
 // ---------------- 핫 리로드 소켓 ----------------
 static int openServer() {
     int fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -413,7 +244,7 @@ static void pollSocket(App &a) {
                 "\n--- print ---\n" + a.printBuf;
         a.printBuf.clear();
     } else {
-        reply = loadScript(a, src);
+        reply = loadLuaScript(a, src);
     }
     reply += "\n";
     send(c, reply.data(), reply.size(), 0);
@@ -434,11 +265,17 @@ static void frame(App &a, float dt) {
     glViewport(0, 0, w, h);
     glClearColor(a.clear[0], a.clear[1], a.clear[2], 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
-    a.shader.use();
     glBindVertexArray(a.vao);
     float aspect = h > 0 ? (float)w / (float)h : 1.0f;
-    a.shader.setMat4("view", a.cam.view());
-    a.shader.setMat4("projection", a.cam.projection(aspect));
+    a.t += dt;
+
+    a.renderer.frameUniforms = {
+        {"view", a.cam.view()},
+        {"projection", a.cam.projection(aspect)},
+        {"uTime", a.t},
+    };
+
+    a.renderer.flush();
 
     char buf[64];
     for (inputEvent i : a.inputEvents) {
@@ -513,7 +350,6 @@ static void frame(App &a, float dt) {
     a.texts.clear();
 
     glm::vec2 d = a.dragCur - a.dragStart;
-
     float len = glm::length(d);
     if (a.dragging && len > 1.0f) {
         a.arrow2D.draw(a.dragStart, d, len, glm::vec2(w, h));
@@ -549,7 +385,7 @@ void android_main(android_app *app) {
     app->onAppCmd = onCmd;
     app->onInputEvent = onInput;
 
-    loadScript(a, DEFAULT_SCRIPT);
+    loadLuaScript(a, DEFAULT_SCRIPT);
     a.listenFd = openServer();
     a.font.load("fonts/pixel.ttf", 32.0f);
 

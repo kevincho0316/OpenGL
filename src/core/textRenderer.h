@@ -5,6 +5,12 @@
 #include <glm/glm.hpp>
 #include <vector>
 
+struct TextCmd {
+    std::string s;
+    float x, y, size;
+    glm::vec4 color;
+};
+
 class TextRenderer {
   public:
     TextRenderer() = default;

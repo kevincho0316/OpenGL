@@ -93,7 +93,6 @@ Shader::Shader(const std::string &vsDir, const std::string &fsDir) {
     glAttachShader(ID, vs);
     glAttachShader(ID, fs);
     glLinkProgram(ID);
-    int ok;
     glGetProgramiv(ID, GL_LINK_STATUS, &ok);
     if (!ok) {
         char log[512];

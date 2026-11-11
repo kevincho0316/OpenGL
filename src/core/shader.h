@@ -18,6 +18,7 @@ class Shader {
 #endif
 
     unsigned int ID = 0;
+    int ok = 0;
 
     Shader() = default;
     Shader(const std::string &vsDir, const std::string &fsDir);

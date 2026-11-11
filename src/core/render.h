@@ -28,5 +28,5 @@ class Renderer {
     std::vector<ShaderUniform> frameUniforms; // view, projection 등 공통값
 
     void submit(DrawCmd cmd) { queue_.push_back(std::move(cmd)); }
-    void flush(); // 렌더 스레드에서, 프레임마다 1번
+    void flush();
 };
