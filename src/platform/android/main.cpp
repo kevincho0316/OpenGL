@@ -133,6 +133,8 @@ static bool initGL(App &a, ANativeWindow *win) {
                               8,
                               EGL_BLUE_SIZE,
                               8,
+                              EGL_DEPTH_SIZE,
+                              24,
                               EGL_NONE};
     EGLConfig cfg;
     EGLint n = 0;
@@ -263,8 +265,7 @@ static void frame(App &a, float dt) {
     eglQuerySurface(a.dpy, a.surf, EGL_HEIGHT, &h);
     glViewport(0, 0, w, h);
     glClearColor(a.clear[0], a.clear[1], a.clear[2], 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
-    glBindVertexArray(a.vao);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     float aspect = h > 0 ? (float)w / (float)h : 1.0f;
     a.t += dt;
 

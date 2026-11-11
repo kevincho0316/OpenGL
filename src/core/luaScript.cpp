@@ -160,8 +160,6 @@ std::string loadLuaScript(App &a, const std::string &src) {
                                0,
                                4,
                                {{"uRect", rect}, {"uColor", color}}});
-
-            glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
         });
 
     L->set_function("print", [&a](sol::this_state ts, sol::variadic_args va) {

@@ -62,6 +62,8 @@ void Renderer::flush() {
     }
 
     glBindVertexArray(0);
-    glDepthMask(GL_TRUE); // 다음 프레임 glClear가 깊이를 지울 수 있도록
+    glDepthMask(GL_TRUE);     // 다음 프레임 glClear가 깊이를 지울 수 있도록
+    glDisable(GL_DEPTH_TEST); // 추가
+    glDisable(GL_BLEND);
     queue_.clear();
 }
