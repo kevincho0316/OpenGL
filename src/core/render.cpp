@@ -1,4 +1,6 @@
 #include "core/render.h"
+#include "core/shader.h"
+#include "core/shaderLib.h"
 #include <algorithm>
 
 void Renderer::setPassState(Pass p) {
@@ -31,25 +33,27 @@ void Renderer::flush() {
 
     bool first = true;
     Pass curPass{};
-    const Shader *bound = nullptr;
+    const ShaderEntry *bound = nullptr;
 
     for (const DrawCmd &c : queue_) {
-        if (!c.shader || !c.shader->ID)
+        if (!c.ShaderEntry || !c.ShaderEntry->shader.ID)
             continue; // 컨텍스트 손실 직후 등
+
+        const Shader &s = c.ShaderEntry->shader;
 
         if (first || c.pass != curPass) {
             setPassState(c.pass);
             curPass = c.pass;
             first = false;
         }
-        if (c.shader != bound) {
-            c.shader->use();
+        if (c.ShaderEntry != bound) {
+            c.ShaderEntry->shader.use();
             for (const auto &u : frameUniforms)
-                apply(*c.shader, u);
-            bound = c.shader;
+                apply(s, u);
+            bound = c.ShaderEntry;
         }
         for (const auto &u : c.uniforms)
-            apply(*c.shader, u);
+            apply(s, u);
 
         glBindVertexArray(c.vao);
         glDrawArrays(c.mode, c.first, c.count);

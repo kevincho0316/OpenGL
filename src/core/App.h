@@ -46,7 +46,7 @@ struct App {
     EGLContext ctx = EGL_NO_CONTEXT;
     GLuint vao = 0, vbo = 0;
     float clear[3] = {0, 0, 0};
-    int t = 0;
+    float t = 0;
     ShaderLib shaders;
     Camera cam; // 스크립트 리로드해도 유지됨
     Grid grid;

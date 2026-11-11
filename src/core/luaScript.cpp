@@ -63,27 +63,43 @@ std::string loadLuaScript(App &a, const std::string &src) {
     });
 
     L->set_function("setBool",
-                    [&a](const std::string &s, const std::string &n, bool v) {
-                        a.shaders.get(s)->shader.setBool(n, v);
+                    [&a](const std::string &sn, const std::string &n, bool v) {
+                        ShaderEntry *e = a.shaders.get(sn);
+                        if (!e)
+                            throw std::runtime_error("unknown shader: " + sn);
+                        e->params[n] = v;
                     });
 
     L->set_function("setInt",
-                    [&a](const std::string &s, const std::string &n, int v) {
-                        a.shaders.get(s)->shader.setInt(n, v);
+                    [&a](const std::string &sn, const std::string &n, int v) {
+                        ShaderEntry *e = a.shaders.get(sn);
+                        if (!e)
+                            throw std::runtime_error("unknown shader: " + sn);
+                        e->params[n] = v;
                     });
 
     L->set_function("setFloat",
-                    [&a](const std::string &s, const std::string &n, float v) {
-                        a.shaders.get(s)->shader.setFloat(n, v);
+                    [&a](const std::string &sn, const std::string &n, float v) {
+                        ShaderEntry *e = a.shaders.get(sn);
+                        if (!e)
+                            throw std::runtime_error("unknown shader: " + sn);
+                        e->params[n] = v;
                     });
 
-    L->set_function("setVec3", [&a](const std::string &s, const std::string &n,
+    L->set_function("setVec3", [&a](const std::string &sn, const std::string &n,
                                     glm::vec3 v) {
-        a.shaders.get(s)->shader.setVec3(n, v);
+        ShaderEntry *e = a.shaders.get(sn);
+        if (!e)
+            throw std::runtime_error("unknown shader: " + sn);
+        e->params[n] = v;
     });
-    L->set_function("setVec4", [&a](const std::string &s, const std::string &n,
+
+    L->set_function("setVec4", [&a](const std::string &sn, const std::string &n,
                                     glm::vec4 v) {
-        a.shaders.get(s)->shader.setVec4(n, v);
+        ShaderEntry *e = a.shaders.get(sn);
+        if (!e)
+            throw std::runtime_error("unknown shader: " + sn);
+        e->params[n] = v;
     });
 
     L->set_function("setTrans",
@@ -134,7 +150,7 @@ std::string loadLuaScript(App &a, const std::string &src) {
                 return;
 
             a.renderer.submit({Pass::Opaque,
-                               &s->shader,
+                               s,
                                a.vao,
                                GL_TRIANGLE_STRIP,
                                0,

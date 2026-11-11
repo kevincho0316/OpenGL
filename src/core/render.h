@@ -1,6 +1,7 @@
 // src/core/render.h
 #pragma once
 #include "core/shader.h"
+#include "core/shaderLib.h"
 #include "core/uniform.h"
 #include "gl.h"
 #include <vector>
@@ -10,7 +11,7 @@ enum class Pass { Opaque, Transparent, Overlay, UI };
 struct DrawCmd {
     Pass pass = Pass::Opaque;
 
-    const Shader *shader = nullptr;
+    const ShaderEntry *ShaderEntry = nullptr;
     GLuint vao = 0;
     GLenum mode = GL_TRIANGLES;
     GLint first = 0;

@@ -42,24 +42,23 @@
 static const int PORT = 7777;
 
 static const char *DEFAULT_SCRIPT = R"LUA(
-
 local t = 0
 function init()
-    --setFont('/fonts/pixel.ttf', 35.0)
+    -- setFont('/fonts/pixel.ttf', 35.0)
 end
 
 function update(dt)
+    t = t+dt
     clear_color(0.0, 0.0, 0.0)
 
-    setFloat(("main","uToffset", 0.06)
-    setFloat(("main","uboost", 2.0)
-    setFloat(("main","ucontrast", 0.8)
-    setFloat(("main","uConCenter", 0.8)
-    setFloat(("main","uradius", 0.5)
-    setFloat(("main","ufadeRad", 0.5)
-    setFloat(("main","NOISE_AMT", 0.6)
-    setTrans("main",(t * 20, vec3.new(0.0, 0.0, 1.0),
-        vec3.new(0.5, -0.5, 0.0));
+    setFloat("main","uToffset", 0.06)
+    setFloat("main","uboost", 2.0)
+    setFloat("main","ucontrast", 0.8)
+    setFloat("main","uConCenter", 0.8)
+    setFloat("main","uradius", 0.5)
+    setFloat("main","ufadeRad", 0.5)
+    setFloat("main","NOISE_AMT", 0.6)
+    -- setTrans((t * 20, vec3.new(0.0, 0.0, 1.0),vec3.new(0.5, -0.5, 0.0));
 
 
 
@@ -72,12 +71,12 @@ function update(dt)
     camPos(cp)
     camLookAt(vec3.new(0, 0, 0))
 
-    --setText("x: " .. string.format("%.2f", cp.x), 250.0, 250.0, 5, vec4.new(1, 1, 1, 1))
-    --setText("y: " .. string.format("%.2f", cp.y), 250.0, 400.0, 5, vec4.new(1, 1, 1, 1))
-    --setText("z: " .. string.format("%.2f", cp.z), 250.0, 550.0, 5, vec4.new(1, 1, 1, 1))
+    setText("x: " .. string.format("%.2f", cp.x), 250.0, 250.0, 5, vec4.new(1, 1, 1, 1))
+    setText("y: " .. string.format("%.2f", cp.y), 250.0, 400.0, 5, vec4.new(1, 1, 1, 1))
+    setText("z: " .. string.format("%.2f", cp.z), 250.0, 550.0, 5, vec4.new(1, 1, 1, 1))
 
     local a = t * 2 * math.pi / 5 -- 5초에 한 바퀴
-    rect(vec4.new(0, 0, 6, 13),
+    rect("main",vec4.new(0, 0, 6, 13),
         vec3.new(0.5 + math.sin(a), 0.6, 0.85))
 end
 )LUA";
@@ -275,8 +274,6 @@ static void frame(App &a, float dt) {
         {"uTime", a.t},
     };
 
-    a.renderer.flush();
-
     char buf[64];
     for (inputEvent i : a.inputEvents) {
         switch (i.inputType) {
@@ -310,8 +307,9 @@ static void frame(App &a, float dt) {
             break;
         }
         }
-        a.inputEvents.clear();
     }
+
+    a.inputEvents.clear();
 
     if (a.lua && a.lastError.empty() && a.needInit) {
         a.needInit = false;
@@ -344,6 +342,9 @@ static void frame(App &a, float dt) {
             }
         }
     }
+
+    a.renderer.flush();
+
     for (const TextCmd &t : a.texts)
         a.textRenderer.draw(t.s.c_str(), t.x, t.y, t.size, t.color, (int)w,
                             (int)h);

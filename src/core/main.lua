@@ -6,26 +6,23 @@
 --         camGetPos() -> vec3  camFront() -> vec3
 --         기본값: ortho, pos (0,0,1), -Z 방향
 
-
 local t = 0
 function init()
-    --setFont('/fonts/pixel.ttf', 35.0)
+    -- setFont('/fonts/pixel.ttf', 35.0)
 end
 
 function update(dt)
     t = t + dt
     clear_color(0.0, 0.0, 0.0)
 
-    setFloat("uTime", t)
-    setFloat("uToffset", 0.06)
-    setFloat("uboost", 2.0)
-    setFloat("ucontrast", 0.8)
-    setFloat("uConCenter", 0.8)
-    setFloat("uradius", 0.5)
-    setFloat("ufadeRad", 0.5)
-    setFloat("NOISE_AMT", 0.6)
-    setTrans(t * 20, vec3.new(0.0, 0.0, 1.0),
-        vec3.new(0.5, -0.5, 0.0));
+    setFloat("main", "uToffset", 0.06)
+    setFloat("main", "uboost", 2.0)
+    setFloat("main", "ucontrast", 0.8)
+    setFloat("main", "uConCenter", 0.8)
+    setFloat("main", "uradius", 0.5)
+    setFloat("main", "ufadeRad", 0.5)
+    setFloat("main", "NOISE_AMT", 0.6)
+    -- setTrans((t * 20, vec3.new(0.0, 0.0, 1.0),vec3.new(0.5, -0.5, 0.0));
 
 
 
@@ -43,6 +40,6 @@ function update(dt)
     setText("z: " .. string.format("%.2f", cp.z), 250.0, 550.0, 5, vec4.new(1, 1, 1, 1))
 
     local a = t * 2 * math.pi / 5 -- 5초에 한 바퀴
-    rect(vec4.new(0, 0, 6, 13),
+    rect("main", vec4.new(0, 0, 6, 13),
         vec3.new(0.5 + math.sin(a), 0.6, 0.85))
 end
