@@ -36,21 +36,23 @@ void Renderer::flush() {
     const ShaderEntry *bound = nullptr;
 
     for (const DrawCmd &c : queue_) {
-        if (!c.ShaderEntry || !c.ShaderEntry->shader.ID)
+        if (!c.shaderEntry || !c.shaderEntry->shader.ID)
             continue; // 컨텍스트 손실 직후 등
 
-        const Shader &s = c.ShaderEntry->shader;
+        const Shader &s = c.shaderEntry->shader;
 
         if (first || c.pass != curPass) {
             setPassState(c.pass);
             curPass = c.pass;
             first = false;
         }
-        if (c.ShaderEntry != bound) {
-            c.ShaderEntry->shader.use();
+        if (c.shaderEntry != bound) {
+            c.shaderEntry->shader.use();
             for (const auto &u : frameUniforms)
                 apply(s, u);
-            bound = c.ShaderEntry;
+            bound = c.shaderEntry;
+            for (const auto &[name, v] : c.shaderEntry->params)
+                apply(s, name, v);
         }
         for (const auto &u : c.uniforms)
             apply(s, u);

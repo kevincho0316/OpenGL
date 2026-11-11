@@ -11,7 +11,7 @@ enum class Pass { Opaque, Transparent, Overlay, UI };
 struct DrawCmd {
     Pass pass = Pass::Opaque;
 
-    const ShaderEntry *ShaderEntry = nullptr;
+    const ShaderEntry *shaderEntry = nullptr;
     GLuint vao = 0;
     GLenum mode = GL_TRIANGLES;
     GLint first = 0;

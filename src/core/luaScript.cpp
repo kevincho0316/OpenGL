@@ -29,13 +29,17 @@
 
 // THIS IS ONLY TEMP
 // I WILL MAKE A OBJECT CLASS
-void setTrans(App &a, float angle, glm::vec3 angleVec, glm::vec3 scale) {
+void setTrans(App &a, const std::string &sn, float angle, glm::vec3 angleVec,
+              glm::vec3 scale) {
     glm::mat4 trans = glm::mat4(1.0f);
     trans = glm::rotate(trans, glm::radians(angle), angleVec);
     trans = glm::scale(trans, scale);
-    unsigned int transformLoc =
-        glGetUniformLocation(a.shaders.get("main")->shader.ID, "transform");
-    glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+
+    ShaderEntry *e = a.shaders.get(sn);
+    if (!e)
+        throw std::runtime_error("unknown shader: " + sn);
+
+    e->params["transform"] = trans; // glUniformMatrix4fv 대신
 }
 
 // ---------------- Lua ----------------
@@ -104,7 +108,7 @@ std::string loadLuaScript(App &a, const std::string &src) {
 
     L->set_function("setTrans",
                     [&a](float angle, glm::vec3 axis, glm::vec3 scale) {
-                        setTrans(a, angle, axis, scale);
+                        setTrans(a, "main", angle, axis, scale);
                     });
 
     // ---- camera ----

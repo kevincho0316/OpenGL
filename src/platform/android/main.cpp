@@ -58,7 +58,7 @@ function update(dt)
     setFloat("main","uradius", 0.5)
     setFloat("main","ufadeRad", 0.5)
     setFloat("main","NOISE_AMT", 0.6)
-    -- setTrans((t * 20, vec3.new(0.0, 0.0, 1.0),vec3.new(0.5, -0.5, 0.0));
+    setTrans(t * 20, vec3.new(0.0, 0.0, 1.0),vec3.new(0.5, -0.5, 0.0));
 
 
 
