@@ -8,7 +8,6 @@
 
 class Grid {
   private:
-    bool registed = false;
     const ShaderEntry *shaderEntry_ = nullptr;
 
     float scale_ = 500.0f;

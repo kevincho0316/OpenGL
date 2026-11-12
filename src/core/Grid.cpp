@@ -12,16 +12,12 @@
 #include <vector>
 
 bool Grid::shaderRegister(ShaderLib &lib) {
-    registed = lib.add("Grid", "shaders/Grid.vert", "shaders/Grid.frag");
-    if (!registed)
-        LOGE("GRID::ShaderEntry cant be added to ShaderLib");
-
-    shaderEntry_ = lib.get("Grid");
-    return registed;
+    return lib.add("Grid", "shaders/Grid.vert", "shaders/Grid.frag");
 };
 
 bool Grid::init(ShaderLib &lib) {
-    if (!registed) {
+    shaderEntry_ = lib.get("Grid");
+    if (!shaderEntry_) {
         LOGE("GRID::ShaderEntry is not registered to ShaderLib");
         return false;
     }

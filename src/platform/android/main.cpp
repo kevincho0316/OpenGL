@@ -146,8 +146,6 @@ static bool initGL(App &a, ANativeWindow *win) {
     if (!eglMakeCurrent(a.dpy, a.surf, a.surf, a.ctx))
         return false;
 
-    a.shaders.add("main", VsDir, FsDir);
-
     const float quad[] = {-0.5f, -0.5f, 0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f};
     glGenVertexArrays(1, &a.vao);
     glGenBuffers(1, &a.vbo);
@@ -157,12 +155,10 @@ static bool initGL(App &a, ANativeWindow *win) {
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
 
-    a.grid.shaderRegister(a.shaders);
-    a.grid.init(a.shaders);
-    a.grid.setPlane(1); // XY 격자
-
-    a.arrow2D.init();
     a.shaders.recreateAll();
+    a.grid.init(a.shaders);
+    a.arrow2D.init(a.shaders);
+
     LOG("GL init ok");
     return true;
 }
@@ -172,6 +168,7 @@ static void termGL(App &a) {
         return;
     if (a.ctx != EGL_NO_CONTEXT) {
         a.grid.destroy();
+        a.arrow2D.destroy();
         a.shaders.destroyAll();
         glDeleteBuffers(1, &a.vbo);
         glDeleteVertexArrays(1, &a.vao);
@@ -344,6 +341,11 @@ static void frame(App &a, float dt) {
             }
         }
     }
+    glm::vec2 d = a.dragCur - a.dragStart;
+    float len = glm::length(d);
+    if (a.dragging && len > 1.0f) {
+        a.arrow2D.draw(a.renderer, a.dragStart, d, len, glm::vec2(w, h));
+    }
 
     a.grid.draw(a.renderer, a.cam, aspect);
     a.renderer.flush();
@@ -352,12 +354,6 @@ static void frame(App &a, float dt) {
         a.textRenderer.draw(t.s.c_str(), t.x, t.y, t.size, t.color, (int)w,
                             (int)h);
     a.texts.clear();
-
-    glm::vec2 d = a.dragCur - a.dragStart;
-    float len = glm::length(d);
-    if (a.dragging && len > 1.0f) {
-        a.arrow2D.draw(a.dragStart, d, len, glm::vec2(w, h));
-    }
 
     eglSwapBuffers(a.dpy, a.surf);
 }
@@ -386,6 +382,11 @@ void android_main(android_app *app) {
     app->userData = &a;
     app->onAppCmd = onCmd;
     app->onInputEvent = onInput;
+
+    a.shaders.add("main", VsDir, FsDir);
+    a.grid.shaderRegister(a.shaders);
+    a.grid.setPlane(1); // XY 격자
+    a.arrow2D.shaderRegister(a.shaders);
 
     loadLuaScript(a, DEFAULT_SCRIPT);
     a.listenFd = openServer();

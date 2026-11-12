@@ -2,6 +2,8 @@
 
 #include "../gl.h"
 #include "camera.h"
+#include "core/render.h"
+#include "core/shaderLib.h"
 #include "glm/ext/vector_float2.hpp"
 #include "glm/ext/vector_float4.hpp"
 #include "glm/fwd.hpp"
@@ -11,7 +13,7 @@
 
 class Arrow2D {
   private:
-    Shader shader_;
+    const ShaderEntry *shaderEntry_ = nullptr;
 
     GLuint vao_, vbo_ = 0;
     glm::vec2 anchor_;
@@ -46,7 +48,11 @@ class Arrow2D {
   public:
     Arrow2D() = default;
     ~Arrow2D() { destroy(); }
-    bool init();
-    void draw(glm::vec2 an, glm::vec2 dir, float s, glm::vec2 screen);
+
+    bool shaderRegister(ShaderLib &lib);
+    bool init(ShaderLib &lib);
     void destroy();
+
+    void draw(Renderer &r, glm::vec2 an, glm::vec2 dir, float s,
+              glm::vec2 screen);
 };
