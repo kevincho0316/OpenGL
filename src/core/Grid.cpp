@@ -1,20 +1,41 @@
 #include "Grid.h"
 #include "../gl.h"
 #include "camera.h"
+#include "core/render.h"
+#include "core/shaderLib.h"
+#include "core/uniform.h"
+#include "platform/android/log.h"
 #include "shader.h"
 #include "sol/traits.hpp"
+#include <GLES3/gl3.h>
 #include <glm/glm.hpp>
+#include <vector>
 
-bool Grid::init() {
+bool Grid::shaderRegister(ShaderLib &lib) {
+    registed = lib.add("Grid", "shaders/Grid.vert", "shaders/Grid.frag");
+    if (!registed)
+        LOGE("GRID::ShaderEntry cant be added to ShaderLib");
+
+    shaderEntry_ = lib.get("Grid");
+    return registed;
+};
+
+bool Grid::init(ShaderLib &lib) {
+    if (!registed) {
+        LOGE("GRID::ShaderEntry is not registered to ShaderLib");
+        return false;
+    }
+
     float quad[] = {
         -1, -1, 0, 1, -1, 0, 1, 1, 0, -1, -1, 0, 1, 1, 0, -1, 1, 0,
     };
 
-    shader_ = Shader("shaders/Grid.vert", "shaders/Grid.frag");
+    shaderEntry_ = lib.get("Grid");
     glGenVertexArrays(1, &vao_);
     glGenBuffers(1, &vbo_);
 
     glBindVertexArray(vao_);
+
     glBindBuffer(GL_ARRAY_BUFFER, vbo_);
 
     glBufferData(GL_ARRAY_BUFFER, sizeof quad, quad, GL_STATIC_DRAW);
@@ -32,20 +53,11 @@ void Grid::destroy() {
         glDeleteBuffers(1, &vbo_);
     if (vao_)
         glDeleteVertexArrays(1, &vao_);
-    shader_.destroy();
     vao_ = vbo_ = 0;
 }
 
-void Grid::draw(const Camera &cam, float aspect) {
-    shader_.use();
-    shader_.setMat4("uViewProj", cam.projection(aspect) * cam.view());
-    shader_.setFloat("uScale", scale);
-    shader_.setVec3("uCam", cam.position);
-    shader_.setInt("uPlane", plane);
-    glEnable(GL_BLEND);
-    glBindVertexArray(vao_);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-    glDisable(GL_BLEND);
-    glBindVertexArray(0);
+void Grid::draw(Renderer &r, const Camera &cam, float aspect) {
+    std::vector<ShaderUniform> su = {
+        {"uScale", scale_}, {"uCam", cam.position}, {"uPlane", plane_}};
+    r.submit({Pass::Overlay, shaderEntry_, vao_, GL_TRIANGLES, 0, 6, su});
 }

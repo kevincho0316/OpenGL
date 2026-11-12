@@ -157,7 +157,8 @@ static bool initGL(App &a, ANativeWindow *win) {
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
 
-    a.grid.init();
+    a.grid.shaderRegister(a.shaders);
+    a.grid.init(a.shaders);
     a.grid.setPlane(1); // XY 격자
 
     a.arrow2D.init();
@@ -344,6 +345,7 @@ static void frame(App &a, float dt) {
         }
     }
 
+    a.grid.draw(a.renderer, a.cam, aspect);
     a.renderer.flush();
 
     for (const TextCmd &t : a.texts)
@@ -356,8 +358,6 @@ static void frame(App &a, float dt) {
     if (a.dragging && len > 1.0f) {
         a.arrow2D.draw(a.dragStart, d, len, glm::vec2(w, h));
     }
-
-    a.grid.draw(a.cam, aspect);
 
     eglSwapBuffers(a.dpy, a.surf);
 }

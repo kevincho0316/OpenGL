@@ -1,5 +1,7 @@
 layout(location = 0) in vec3 aPos;
 
+uniform mat4 view;
+uniform mat4 projection;
 uniform mat4 uViewProj;
 uniform vec3 uCam;
 uniform float uScale;
@@ -20,5 +22,5 @@ void main() {
         world = vec3(0.0, p.x + uCam.y, p.y + uCam.z);
         vCoord = world.yz;
     }
-    gl_Position = uViewProj * vec4(world, 1.0);
+    gl_Position = projection * view * vec4(world, 1.0);
 }

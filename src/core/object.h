@@ -1,9 +1,12 @@
-#include "objectTransform.h"
-#include "render.h"
+#include "core/Rigidbody.h"
+#include "core/objectTransform.h"
+#include "core/render.h"
+
 #include <optional>
 #include <variant>
 
 struct object {
     std::variant<Transform2D, Transform3D> transform;
-    std::optional<Renderer> renderer;
+    std::optional<DrawCmd> renderer;
+    std::optional<RigidBody> rigidbody;
 };
