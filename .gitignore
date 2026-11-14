@@ -1,4 +1,5 @@
 .claude/       # ignore a folder
+.termux-ndk/       
 .env                # ignore a specific file
 build/
 .DS_Store

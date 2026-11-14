@@ -1,11 +1,3 @@
--- 저장 후 ./push.sh 하면 앱에 바로 반영됨
--- API: clear_color(r,g,b)  rect(x,y,w,h, r,g,b)  print(...)
--- 좌표: 화면 중앙 (0,0), 가로/세로 -1 ~ 1
--- Camera: camPos(vec3)  camRot(yaw,pitch)  camLookAt(vec3)  camMove(vec3 right/up/forward)
---         camPerspective([fov=45])  camOrtho([size=1])  camClip(near,far)
---         camGetPos() -> vec3  camFront() -> vec3
---         기본값: ortho, pos (0,0,1), -Z 방향
-
 local t = 0
 function init()
     -- setFont('fonts/pixel.ttf', 35.0)

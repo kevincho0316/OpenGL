@@ -1,6 +1,6 @@
 --xmake f -p linux -c -y && xmake run              # Linux (Termux에서도 가능)
 --xmake f -p windows -c -y && xmake run            # Windows
---xmake f -p android -a arm64-v8a --ndk=$ANDROID_NDK --sdk=$ANDROID_SDK_ROOT --ndk_sdkver=24 -c -y && xmake
+
 
 add_rules("mode.debug", "mode.release")
 set_languages("c++17")
