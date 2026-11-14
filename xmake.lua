@@ -43,8 +43,9 @@ else
     add_files("src/platform/desktop/*.cpp")
     add_packages("glfw", "glm", "glad")
     if is_plat("windows") then
-        add_links("opengl32")
-        add_syslinks("ws2_32")
+        add_defines("NOMINMAX", "WIN32_LEAN_AND_MEAN", "_CRT_SECURE_NO_WARNINGS")
+        add_cxflags("/utf-8", "/bigobj", { tools = "cl" }) -- 한글 주석/문자열, sol2 큰 obj
+        add_syslinks("opengl32", "ws2_32", "user32", "gdi32", "shell32")
     elseif is_plat("linux") then
         add_links("GL")
     elseif is_plat("macosx") then

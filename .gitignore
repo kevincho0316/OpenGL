@@ -3,3 +3,4 @@
 build/
 .DS_Store
 !important.log     # "!" re-includes a file that a pattern would exclude
+.xmake/

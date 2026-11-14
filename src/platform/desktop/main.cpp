@@ -10,6 +10,8 @@
 #include <glm/glm.hpp>
 
 #include "core/App.h"
+#include "core/appFrame.h"
+#include "core/hotReload.h"
 #include "core/log.h"
 #include "core/luaScript.h"
 #include <cstdio>
@@ -18,23 +20,6 @@
 #include <sstream>
 #include <string>
 #include <system_error>
-
-#ifdef _WIN32
-#include <winsock2.h>
-#include <ws2tcpip.h>
-using sock_t = SOCKET;
-#define closesock closesocket
-#else
-#include <arpa/inet.h>
-#include <fcntl.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <unistd.h>
-using sock_t = int;
-#define closesock close
-#endif
-
-#define LOG(...) (fprintf(stderr, "[gltest] " __VA_ARGS__), fputc('\n', stderr))
 
 static const int PORT = 7777;
 static const char *SCRIPT_PATH = "src/core/main.lua";
@@ -51,7 +36,6 @@ end
 static const char *VsDir = "shaders/VertexShader.glsl";
 static const char *FsDir = "shaders/ButterflyFgSh.glsl";
 
-static sock_t g_listenFd = (sock_t)-1;
 static std::filesystem::file_time_type g_scriptTime{};
 
 // ---------------- 오프스크린 FBO ----------------
@@ -89,7 +73,7 @@ static void ensureFbo(int w, int h) {
   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
                             GL_RENDERBUFFER, g_fboDepth);
   if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-    LOG("FBO incomplete");
+    LOGE("FBO incomplete");
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   g_fboW = w;
   g_fboH = h;
@@ -108,45 +92,27 @@ static bool initGL(App &a) {
 #endif
   a.win = glfwCreateWindow(900, 900, "GLTest", nullptr, nullptr);
   if (!a.win) {
-    LOG("Failed to create GLFW window");
+    LOGE("Failed to create GLFW window");
     return false;
   }
   glfwMakeContextCurrent(a.win);
   glfwSwapInterval(1);
-  if (!gladLoadGL((GLADloadfunc)glfwGetProcAddress)) {
-    LOG("Failed to init GLAD");
+  if (!GL_LOAD(glfwGetProcAddress)) {
+    LOGE("Failed to init GLAD");
     return false;
   }
 
-  const float quad[] = {-0.5f, -0.5f, 0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f};
-  glGenVertexArrays(1, &a.vao);
-  glGenBuffers(1, &a.vbo);
-  glBindVertexArray(a.vao);
-  glBindBuffer(GL_ARRAY_BUFFER, a.vbo);
-  glBufferData(GL_ARRAY_BUFFER, sizeof quad, quad, GL_STATIC_DRAW);
-  glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+  appInitGL(a);
 
-  a.shaders.recreateAll();
-  a.grid.init(a.shaders);
-  a.arrow2D.init(a.shaders);
-  a.textRenderer.init(a.font);
-
-  LOG("GL init ok: %s / %s", (const char *)glGetString(GL_VERSION),
-      (const char *)glGetString(GL_RENDERER));
+  LOGI("GL init ok: %s / %s", (const char *)glGetString(GL_VERSION),
+       (const char *)glGetString(GL_RENDERER));
   return true;
 }
 
 static void termGL(App &a) {
   if (a.win) {
     destroyFbo();
-    a.textRenderer.destroy();
-    a.grid.destroy();
-    a.arrow2D.destroy();
-    glDeleteBuffers(1, &a.vbo);
-    glDeleteVertexArrays(1, &a.vao);
-    a.vao = a.vbo = 0;
-    a.shaders.destroyAll();
+    appTermGL(a);
     glfwDestroyWindow(a.win);
     a.win = nullptr;
   }
@@ -168,88 +134,7 @@ static void pollScriptFile(App &a, bool force = false) {
     return; // 에디터가 저장 도중일 수 있음 → 다음 프레임에 재시도
   g_scriptTime = t;
   std::string r = loadLuaScript(a, src);
-  LOG("%s: %s", SCRIPT_PATH, r.c_str());
-}
-
-// ---------------- 핫 리로드 소켓 ----------------
-static sock_t openServer() {
-#ifdef _WIN32
-  WSADATA wsa;
-  WSAStartup(MAKEWORD(2, 2), &wsa);
-#endif
-  sock_t fd = socket(AF_INET, SOCK_STREAM, 0);
-  if (fd == (sock_t)-1) {
-    LOG("socket failed");
-    return (sock_t)-1;
-  }
-  int one = 1;
-  setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const char *)&one, sizeof one);
-  sockaddr_in ad{};
-  ad.sin_family = AF_INET;
-  ad.sin_port = htons(PORT);
-  ad.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
-  if (bind(fd, (sockaddr *)&ad, sizeof ad) < 0 || listen(fd, 2) < 0) {
-    LOG("bind/listen failed");
-    closesock(fd);
-    return (sock_t)-1;
-  }
-#ifdef _WIN32
-  u_long nb = 1;
-  ioctlsocket(fd, FIONBIO, &nb);
-#else
-  fcntl(fd, F_SETFL, O_NONBLOCK);
-#endif
-  LOG("listening on 127.0.0.1:%d", PORT);
-  return fd;
-}
-
-// 매 프레임 호출. 연결이 있으면 NUL 까지 읽고 처리 후 응답.
-//   빈 내용 → 상태 조회 (마지막 에러 + print 출력)
-//   내용 있음 → 스크립트 리로드
-static void pollSocket(App &a) {
-  if (g_listenFd == (sock_t)-1)
-    return;
-  sock_t c = accept(g_listenFd, nullptr, nullptr);
-  if (c == (sock_t)-1)
-    return;
-#ifdef _WIN32
-  u_long blk = 0;
-  ioctlsocket(c, FIONBIO, &blk); // accept 소켓은 non-blocking 을 상속함
-  DWORD tv = 2000;
-#else
-  timeval tv{2, 0};
-#endif
-  setsockopt(c, SOL_SOCKET, SO_RCVTIMEO, (const char *)&tv, sizeof tv);
-
-  std::string src;
-  char buf[4096];
-  bool done = false;
-  while (!done) {
-    int n = (int)recv(c, buf, sizeof buf, 0);
-    if (n <= 0)
-      break;
-    for (int i = 0; i < n; i++) {
-      if (buf[i] == '\0') {
-        done = true;
-        break;
-      }
-      src += buf[i];
-    }
-  }
-
-  bool empty = src.find_first_not_of(" \t\r\n") == std::string::npos;
-  std::string reply;
-  if (empty) {
-    reply =
-        "error: " + (a.lastError.empty() ? std::string("none") : a.lastError) +
-        "\n--- print ---\n" + a.printBuf;
-    a.printBuf.clear();
-  } else {
-    reply = loadLuaScript(a, src);
-  }
-  reply += "\n";
-  send(c, reply.data(), (int)reply.size(), 0);
-  closesock(c);
+  LOGI("%s: %s", SCRIPT_PATH, r.c_str());
 }
 
 // ---------------- 프레임 ----------------
@@ -262,79 +147,8 @@ static void frame(App &a, float dt) {
   }
   ensureFbo(w, h);
   glBindFramebuffer(GL_FRAMEBUFFER, g_fbo);
-  glViewport(0, 0, w, h);
-  glClearColor(a.clear[0], a.clear[1], a.clear[2], 1.0f);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  float aspect = h > 0 ? (float)w / (float)h : 1.0f;
-  a.t += dt;
 
-  a.renderer.frameUniforms = {
-      {"view", a.cam.view()},
-      {"projection", a.cam.projection(aspect)},
-      {"uTime", a.t},
-  };
-
-  for (const inputEvent &i : a.inputEvents) {
-    switch (i.inputType) {
-    case InputType::PointerDown:
-      a.dragging = true;
-      a.dragStart = a.dragCur = glm::vec2(i.x, i.y);
-      break;
-    case InputType::PointerMove:
-      a.dragCur = glm::vec2(i.x, i.y);
-      break;
-    case InputType::PointerUp:
-      a.dragging = false;
-      break;
-    default:
-      break;
-    }
-  }
-  a.inputEvents.clear();
-
-  if (a.lua && a.lastError.empty() && a.needInit) {
-    a.needInit = false;
-    sol::protected_function ini = (*a.lua)["init"];
-    if (ini.valid()) {
-      auto r = ini();
-      if (!r.valid()) {
-        sol::error e = r;
-        a.lastError = e.what();
-        LOG("init error: %s", e.what());
-        a.clear[0] = 0.5f;
-        a.clear[1] = 0.0f;
-        a.clear[2] = 0.0f; // 빨간 배경 = 에러
-      }
-    }
-  }
-
-  if (a.lua && a.lastError.empty()) {
-    sol::protected_function upd = (*a.lua)["update"];
-    if (upd.valid()) {
-      auto r = upd(dt);
-
-      if (!r.valid()) {
-        sol::error e = r;
-        a.lastError = e.what();
-        LOG("update error: %s", e.what());
-        a.clear[0] = 0.5f;
-        a.clear[1] = 0.0f;
-        a.clear[2] = 0.0f; // 빨간 배경 = 에러
-      }
-    }
-  }
-
-  glm::vec2 d = a.dragCur - a.dragStart;
-  float len = glm::length(d);
-  if (a.dragging && len > 1.0f)
-    a.arrow2D.draw(a.renderer, a.dragStart, d, len, glm::vec2(w, h));
-
-  a.grid.draw(a.renderer, a.cam, aspect);
-  a.renderer.flush();
-
-  for (const TextCmd &t : a.texts)
-    a.textRenderer.draw(t.s.c_str(), t.x, t.y, t.size, t.color, w, h);
-  a.texts.clear();
+  appFrame(a, dt, w, h);
 
   glBindFramebuffer(GL_READ_FRAMEBUFFER, g_fbo);
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
@@ -376,20 +190,47 @@ static void onCursorPos(GLFWwindow *win, double x, double y) {
   a.inputEvents.push_back({InputType::PointerMove, 0, p.x, p.y, 0});
 }
 
+// GLFW 키 코드 → char. 출력 가능한 ASCII 만 (A-Z 는 대문자, GLFW 와 동일)
+static char keyChar(int key) {
+  if (key >= 32 && key <= 126)
+    return (char)key;
+  switch (key) {
+  case GLFW_KEY_ENTER:
+    return '\n';
+  case GLFW_KEY_TAB:
+    return '\t';
+  case GLFW_KEY_BACKSPACE:
+    return '\b';
+  default:
+    return 0;
+  }
+}
+
 static void onKey(GLFWwindow *win, int key, int, int action, int) {
+  App &a = *(App *)glfwGetWindowUserPointer(win);
+
+  if (action == GLFW_PRESS || action == GLFW_RELEASE) {
+    char c = keyChar(key);
+    if (c)
+      a.inputEvents.push_back({action == GLFW_PRESS ? InputType::KeyDown
+                                                    : InputType::KeyUp,
+                               0, 0.0f, 0.0f, c});
+  }
+
   if (action != GLFW_PRESS)
     return;
-  App &a = *(App *)glfwGetWindowUserPointer(win);
   if (key == GLFW_KEY_ESCAPE)
     glfwSetWindowShouldClose(win, GLFW_TRUE);
   if (key == GLFW_KEY_F5) {
-    // 셰이더 리로드 (컴파일 실패하면 이전 셰이더 유지)
+    // 셰이더 리로드 (main + grid + arrow2D, 실패하면 이전 셰이더 유지)
     a.shaders.recreateAll();
-    LOG("shader reloaded");
+    LOGI("shader reloaded");
   }
 }
 
 int main() {
+  // 파이프/리다이렉트 시에도 로그 바로 보이게 (log.sh, IDE 콘솔)
+  setvbuf(stdout, nullptr, _IONBF, 0);
   App a;
 
   a.shaders.add("main", VsDir, FsDir);
@@ -409,7 +250,7 @@ int main() {
 
   loadLuaScript(a, DEFAULT_SCRIPT);
   pollScriptFile(a, true);
-  g_listenFd = openServer();
+  hotReloadOpen(a, PORT);
 
   double prev = glfwGetTime();
   while (!glfwWindowShouldClose(a.win)) {
@@ -421,16 +262,12 @@ int main() {
     if (dt > 0.1f)
       dt = 0.1f; // 창 드래그 등으로 멈춘 직후 튐 방지
 
-    pollSocket(a);
+    hotReloadPoll(a);
     pollScriptFile(a);
     frame(a, dt);
   }
 
   termGL(a);
-  if (g_listenFd != (sock_t)-1)
-    closesock(g_listenFd);
-#ifdef _WIN32
-  WSACleanup();
-#endif
+  hotReloadClose(a);
   return 0;
 }

@@ -2,6 +2,7 @@
 
 #include "core/arrow2D.h"
 #include "gl.h"
+#include <cstdint>
 #include <glm/glm.hpp>
 #include <memory>
 #include <string>
@@ -31,6 +32,7 @@ struct App {
   EGLDisplay dpy = EGL_NO_DISPLAY;
   EGLSurface surf = EGL_NO_SURFACE;
   EGLContext ctx = EGL_NO_CONTEXT;
+  bool glCurrent = false; // eglMakeCurrent 성공 여부 (GL 리소스 해제 가능?)
   bool glReady() const { return ctx != EGL_NO_CONTEXT; }
 #else
   GLFWwindow *win = nullptr;
@@ -58,7 +60,6 @@ struct App {
   bool needInit = false;
   std::string lastError; // 런타임 에러 (status 로 조회)
   std::string printBuf;  // print() 출력 (status 로 조회)
-#ifdef __ANDROID__
-  int listenFd = -1; // 데스크톱은 main.cpp 에서 소켓 관리 (윈도우 SOCKET 타입)
-#endif
+  // 핫 리로드 리슨 소켓 (core/hotReload.cpp). 윈도우 SOCKET 도 담도록 intptr_t
+  std::intptr_t listenFd = -1;
 };

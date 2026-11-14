@@ -8,7 +8,7 @@
 
 local t = 0
 function init()
-    -- setFont('/fonts/pixel.ttf', 35.0)
+    -- setFont('fonts/pixel.ttf', 35.0)
 end
 
 function update(dt)

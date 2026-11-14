@@ -9,6 +9,8 @@ void setAssetManager(AAssetManager *mgr) { g_assets = mgr; }
 
 std::vector<unsigned char> readFile(const char *path) {
     std::vector<unsigned char> data;
+    while (*path == '/')
+        path++; // "/fonts/x.ttf" 도 허용 (AssetManager 는 앞 '/' 를 못 찾음)
     if (!g_assets) {
         LOGE("readFile: AssetManager 미설정 (setAssetManager 호출 전?)");
         return data;
@@ -28,6 +30,8 @@ std::vector<unsigned char> readFile(const char *path) {
 
 std::vector<unsigned char> readFile(const char *path) {
     std::vector<unsigned char> data;
+    while (*path == '/')
+        path++; // 안드로이드와 같은 규칙
     std::string full = std::string("assets/") + path;
     FILE *f = fopen(full.c_str(), "rb");
     if (!f)
