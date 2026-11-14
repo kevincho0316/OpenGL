@@ -6,7 +6,9 @@
 #include "gl.h"
 #include <vector>
 
-enum class Pass { Opaque, Transparent, Overlay, UI };
+// Emissive: HDR premultiplied-alpha (GL_ONE, GL_ONE_MINUS_SRC_ALPHA), depth
+// test on, depth write off. Drawn after Opaque / Transparent.
+enum class Pass { Opaque, Transparent, Emissive, Overlay, UI };
 
 struct DrawCmd {
     Pass pass = Pass::Opaque;
@@ -18,6 +20,7 @@ struct DrawCmd {
     GLsizei count = 0;
 
     std::vector<ShaderUniform> uniforms; // 이 그리기 전용
+    GLsizei instances = 0; // > 0 = glDrawArraysInstanced
 };
 
 class Renderer {
@@ -29,5 +32,8 @@ class Renderer {
     std::vector<ShaderUniform> frameUniforms; // view, projection 등 공통값
 
     void submit(DrawCmd cmd) { queue_.push_back(std::move(cmd)); }
-    void flush();
+    void flush() { flush(Pass::UI); }
+    // Draws queued commands with pass <= last; later passes stay queued
+    // (scene passes -> post-processing -> Overlay / UI on the final image)
+    void flush(Pass last);
 };

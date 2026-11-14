@@ -7,15 +7,21 @@ function update(dt)
     t = t + dt
     clear_color(0.0, 0.0, 0.0)
 
-    setFloat("main", "uToffset", 0.045)
-    setFloat("main", "uboost", 3.0)
-    setFloat("main", "ucontrast", 1.0)
-    setFloat("main", "uConCenter", 0.9)
-    setFloat("main", "uradius", 0.5)
-    setFloat("main", "ufadeRad", 0.5)
+    setFloat("main", "uToffset", 0.06)
+    setFloat("main", "uboost", 2.0)
+    setFloat("main", "ucontrast", 0.8)
+    setFloat("main", "uConCenter", 0.8)
+    setFloat("main", "uradius", 0.6)
+    setFloat("main", "ufadeRad", 0.3)
     setFloat("main", "NOISE_AMT", 0.6)
-
-    setTrans(180, vec3.new(0.0, 0.0, 1.0), vec3.new(0.5, -0.5, 0.0));
+    setFloat("main", "uDisp", 0.12)
+    setFloat("main", "uFall", 3.0)
+    setFloat("main", "uExposure", 1.0)
+    setFloat("main", "uDispR", 0.25)
+    setFloat("main", "uStreak", 0.7)
+    setFloat("main", "uWingAng", 1.15)
+    setFloat("main", "uWingW", 0.35)
+    setTrans(t * 20, vec3.new(0.0, 0.0, 1.0),vec3.new(0.5, -0.5, 0.0));
 
 
 
@@ -23,7 +29,7 @@ function update(dt)
     camPerspective(60)
     local orbit = t * 0.1
     local radius = 7
-    local cp = vec3.new(0.0, 0.0, 1.0) --vec3.new(math.sin(orbit) * radius * math.sin(t*0.2), math.sin(t * 0.5) * 3, math.cos(orbit) * radius)
+    local cp =vec3.new(math.sin(orbit) * radius * math.sin(t*0.2), math.sin(t * 0.5) * 3, math.cos(orbit) * radius)
 
     camPos(cp)
     camLookAt(vec3.new(0, 0, 0))
@@ -33,6 +39,6 @@ function update(dt)
     setText("z: " .. string.format("%.2f", cp.z), 250.0, 550.0, 5, vec4.new(1, 1, 1, 1))
 
     local a = t * 2 * math.pi / 5 -- 5초에 한 바퀴
-    rect("main", vec4.new(0, 0, 9, 13),
+    rect("main", vec4.new(0, 0, 6, 13),
         vec3.new(0.5 + math.sin(a), 0.6, 0.85))
 end

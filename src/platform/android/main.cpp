@@ -35,9 +35,16 @@ function update(dt)
     setFloat("main","uboost", 2.0)
     setFloat("main","ucontrast", 0.8)
     setFloat("main","uConCenter", 0.8)
-    setFloat("main","uradius", 0.5)
-    setFloat("main","ufadeRad", 0.5)
+    setFloat("main","uradius", 0.6)
+    setFloat("main","ufadeRad", 0.3)
     setFloat("main","NOISE_AMT", 0.6)
+    setFloat("main", "uDisp", 0.12)
+    setFloat("main", "uFall", 3.0)
+    setFloat("main", "uExposure", 1.0)
+    setFloat("main", "uDispR", 0.25)
+    setFloat("main", "uStreak", 0.7)
+    setFloat("main", "uWingAng", 1.15)
+    setFloat("main", "uWingW", 0.35)
     setTrans(t * 20, vec3.new(0.0, 0.0, 1.0),vec3.new(0.5, -0.5, 0.0));
 
 
@@ -62,7 +69,7 @@ end
 )LUA";
 
 static const char *VsDir = "shaders/VertexShader.glsl";
-static const char *FsDir = "shaders/ButterflyFgSh.glsl";
+static const char *FsDir = "shaders/ButterflyFgSh_v2.glsl";
 
 // ---------------- INPUT ----------------
 // 안드로이드 키 코드 → char (데스크톱과 같은 규칙: 문자는 대문자)
@@ -216,6 +223,8 @@ void android_main(android_app *app) {
     a.balls.shaderRegister(a.shaders);
     a.planeBalls.shaderRegister(a.shaders);
     a.modeBtn.shaderRegister(a.shaders);
+    a.specters.shaderRegister(a.shaders);
+    a.post.shaderRegister(a.shaders);
     a.font.load("fonts/pixel.ttf", 32.0f);
 
     loadLuaScript(a, DEFAULT_SCRIPT);

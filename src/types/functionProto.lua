@@ -105,3 +105,30 @@ function setFont(path, size) end
 ---@param size number
 ---@param color vec4
 function setText(text, x, y, size, color) end
+
+---@param n integer  specter particle count (default 40)
+function specterCount(n) end
+
+---@param min number  seconds (default 1)
+---@param max number  seconds (default 2)
+function specterLifetime(min, max) end
+
+---@param s number  quad UV runs -s..+s (default 1, UV_SCALE)
+function specterUvScale(s) end
+
+---@param mode integer  0 = final, 1 = one specter() channel grey, 2 = polar
+function specterDebug(mode) end
+
+---@param on boolean  HDR target + bloom/tonemap on/off
+function postEnable(on) end
+
+---@param threshold number  default 1.0
+---@param strength number  default 1.0
+---@param size number  0..1, default 0.5
+function postBloom(threshold, strength, size) end
+
+---@param s number  saturation boost, default 1.3
+function postSaturation(s) end
+
+---@param mode integer  0 = clamp only, 1 = ACES
+function postTonemap(mode) end

@@ -56,3 +56,30 @@ float fbmWrap(highp vec2 p, float period, float gain) {
 float fbmWrap(highp vec2 p, float period) { // 기본값 대신 오버로드 사용
     return fbmWrap(p, period, 0.5);
 }
+
+// ---------------- v2 헬퍼 ----------------
+#ifndef FBM_OCT
+#define FBM_OCT 5
+#endif
+
+// 감싸지 않는 일반 fbm (범위 대략 -0.5..0.5)
+float fbm(highp vec2 p) {
+    float s = 0.0, a = 0.5, norm = 0.0;
+    for (int k = 0; k < FBM_OCT; k++) {
+        s += a * perlin(p);
+        norm += a;
+        p = p * 2.0 + vec2(17.13, 4.71); // 옥타브마다 격자 정렬 깨기
+        a *= 0.5;
+    }
+    return s / norm;
+}
+
+// 2단 domain warp: p → w1(p) → w2(p + w1). 반환값 = 최종 변위 벡터
+vec2 warp2(highp vec2 p, float t) {
+    vec2 w1 = vec2(fbm(p + t * vec2(0.11, 0.07)),
+                   fbm(p + vec2(5.2, 1.3) - t * vec2(0.05, 0.09)));
+    highp vec2 q = p + 2.0 * w1;
+    return vec2(fbm(q + vec2(1.7, 9.2)),
+                fbm(q + vec2(8.3, 2.8)));
+}
+

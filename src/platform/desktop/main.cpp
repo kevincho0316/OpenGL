@@ -34,7 +34,7 @@ end
 )LUA";
 
 static const char *VsDir = "shaders/VertexShader.glsl";
-static const char *FsDir = "shaders/ButterflyFgSh.glsl";
+static const char *FsDir = "shaders/ButterflyFgSh_v2.glsl";
 
 static std::filesystem::file_time_type g_scriptTime{};
 
@@ -240,6 +240,8 @@ int main() {
   a.balls.shaderRegister(a.shaders);
   a.planeBalls.shaderRegister(a.shaders);
   a.modeBtn.shaderRegister(a.shaders);
+  a.specters.shaderRegister(a.shaders);
+  a.post.shaderRegister(a.shaders);
   a.font.load("fonts/pixel.ttf", 32.0f);
 
   if (!initGL(a)) {

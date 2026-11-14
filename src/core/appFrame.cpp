@@ -19,6 +19,8 @@ void appInitGL(App &a) {
   a.balls.init(a.shaders);
   a.planeBalls.init(a.shaders);
   a.modeBtn.init(a.shaders);
+  a.specters.init(a.shaders);
+  a.post.init(a.shaders);
   a.textRenderer.init(a.font);
 }
 
@@ -29,6 +31,8 @@ void appTermGL(App &a) {
   a.balls.destroy();
   a.planeBalls.destroy();
   a.modeBtn.destroy();
+  a.specters.destroy();
+  a.post.destroy();
   if (a.vbo)
     glDeleteBuffers(1, &a.vbo);
   if (a.vao)
@@ -81,6 +85,8 @@ static void handleInput(App &a, glm::vec2 screen, const glm::mat4 &view,
         a.usePlaneBalls = false;
       else if (i.key == '2')
         a.usePlaneBalls = true;
+      else if (i.key == 'V') // specter debug view: final -> channel -> polar
+        a.specters.debugMode = (a.specters.debugMode + 1) % 3;
       break;
     default:
       break;
@@ -116,7 +122,20 @@ static void runLua(App &a, float dt) {
   }
 }
 
+// Debug builds: report GL errors once per frame (first few only)
+static void checkGLErrors() {
+#ifndef NDEBUG
+  static int reported = 0;
+  for (GLenum e; (e = glGetError()) != GL_NO_ERROR;)
+    if (reported < 20) {
+      reported++;
+      LOGE("GL error 0x%04X", (unsigned)e);
+    }
+#endif
+}
+
 void appFrame(App &a, float dt, int w, int h) {
+  a.post.begin(w, h); // scene goes to the HDR target (if enabled)
   glViewport(0, 0, w, h);
   glClearColor(a.clear[0], a.clear[1], a.clear[2], 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -153,10 +172,16 @@ void appFrame(App &a, float dt, int w, int h) {
   if (a.dragging && len > 1.0f)
     a.arrow2D.draw(a.renderer, a.dragStart, d, len, glm::vec2(w, h));
 
+  a.specters.update(dt, a.cam, aspect);
+  a.specters.draw(a.renderer);
+
   a.grid.draw(a.renderer, a.cam, aspect);
-  a.renderer.flush();
+  a.renderer.flush(Pass::Emissive); // scene passes -> HDR target
+  a.post.end();                     // bloom, colour boost, tonemap, sRGB
+  a.renderer.flush();               // Overlay / UI on the final image
 
   for (const TextCmd &t : a.texts)
     a.textRenderer.draw(t.s.c_str(), t.x, t.y, t.size, t.color, w, h);
   a.texts.clear();
+  checkGLErrors();
 }

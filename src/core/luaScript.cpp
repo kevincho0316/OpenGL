@@ -115,6 +115,29 @@ std::string loadLuaScript(App &a, const std::string &src) {
     L->set_function("camGetPos", [&a]() { return a.cam.position; });
     L->set_function("camFront", [&a]() { return a.cam.front(); });
 
+    // ---- specter particles / post-processing ----
+    L->set_function("specterCount", [&a](int n) { a.specters.count = n; });
+    L->set_function("specterLifetime", [&a](float mn, float mx) {
+        a.specters.lifeMin = mn;
+        a.specters.lifeMax = mx;
+    });
+    L->set_function("specterUvScale",
+                    [&a](float s) { a.specters.uvScale = s; });
+    // 0 = final, 1 = one specter() channel as greyscale, 2 = polar as colour
+    L->set_function("specterDebug",
+                    [&a](int mode) { a.specters.debugMode = mode; });
+    L->set_function("postEnable", [&a](bool on) { a.post.enabled = on; });
+    L->set_function("postBloom",
+                    [&a](float threshold, float strength, float size) {
+                        a.post.bloomThreshold = threshold;
+                        a.post.bloomStrength = strength;
+                        a.post.bloomSize = size;
+                    });
+    L->set_function("postSaturation",
+                    [&a](float s) { a.post.saturation = s; });
+    // 0 = clamp only, 1 = ACES
+    L->set_function("postTonemap", [&a](int mode) { a.post.tonemap = mode; });
+
     //-------text----------
     L->set_function("setFont", [&a](const std::string &p, float size) {
         if (!a.font.load(p.c_str(), size))

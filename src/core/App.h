@@ -23,9 +23,11 @@ struct GLFWwindow;
 #include "core/camera.h"
 #include "core/font.h"
 #include "core/input.h"
+#include "core/postFx.h"
 #include "core/render.h"
 #include "core/shader.h"
 #include "core/shaderLib.h"
+#include "core/specter.h"
 #include "core/textRenderer.h"
 
 struct App {
@@ -52,6 +54,8 @@ struct App {
   std::vector<TextCmd> texts;
   std::vector<inputEvent> inputEvents;
   Renderer renderer;
+  PostFx post;               // HDR target + bloom / tonemap
+  SpecterParticles specters; // "Butterfly Specter" particles (key V = debug view)
 
   Arrow2D arrow2D;
   Balls balls;       // 클릭하면 카메라에서 발사되는 3D 공
