@@ -52,3 +52,19 @@ else
         add_frameworks("OpenGL")
     end
 end
+target_end()
+
+-- Physics unit tests: xmake build physics_test && xmake run physics_test
+target("physics_test")
+set_kind("binary")
+set_default(false)
+add_files("tests/physics_test.cpp", "src/core/physics.cpp")
+add_includedirs("src")
+if is_plat("android") then
+    if os.isdir(termux_inc .. "/glm") then add_includedirs(termux_inc) else add_packages("glm") end
+    add_defines("USE_GLES")
+else
+    add_packages("glm", "glad")
+    if is_plat("windows") then add_cxflags("/utf-8", { tools = "cl" }) end
+end
+target_end()

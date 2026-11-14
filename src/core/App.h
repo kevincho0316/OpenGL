@@ -1,6 +1,8 @@
 #pragma once
 
 #include "core/arrow2D.h"
+#include "core/balls.h"
+#include "core/button.h"
 #include "gl.h"
 #include <cstdint>
 #include <glm/glm.hpp>
@@ -52,6 +54,10 @@ struct App {
   Renderer renderer;
 
   Arrow2D arrow2D;
+  Balls balls;       // 클릭하면 카메라에서 발사되는 3D 공
+  Balls2D planeBalls; // 월드 평면 z = planeZ 위의 2D 공
+  bool usePlaneBalls = false; // 버튼 / 키 1 = 3D 공, 2 = 평면 공
+  Button modeBtn;             // 공 종류 전환 (터치용)
   bool dragging = false;
   glm::vec2 dragStart{0.0f}, dragCur{0.0f};
 

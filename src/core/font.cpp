@@ -17,6 +17,7 @@ bool Font::load(const char *path, float pixelHeight) {
         LOGE("FONT::AtlasIsToSmall(Result %d)", r);
         return false;
     }
+    pixelHeight_ = pixelHeight;
     return true;
 }
 
@@ -25,4 +26,12 @@ bool Font::getQuad(char c, float &x, float &y, stbtt_aligned_quad &q) const {
         return false;
     stbtt_GetBakedQuad(cdata_, W, H, c - 32, &x, &y, &q, 1);
     return true;
+}
+
+float Font::textWidth(const char *text) const {
+    float x = 0.0f, y = 0.0f;
+    stbtt_aligned_quad q;
+    for (const char *p = text; *p; ++p)
+        getQuad(*p, x, y, q); // x 가 글자 advance 만큼 전진
+    return x;
 }

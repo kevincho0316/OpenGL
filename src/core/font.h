@@ -8,6 +8,7 @@ class Font {
     static const int H = 512;
     std::vector<unsigned char> atlas_;
     stbtt_bakedchar cdata_[96];
+    float pixelHeight_ = 0.0f;
 
   public:
     bool load(const char *path, float pixelHeight);
@@ -17,4 +18,7 @@ class Font {
     int atlasHeight() const { return H; }
 
     bool getQuad(char c, float &x, float &y, stbtt_aligned_quad &q) const;
+    // scale = 1 일 때 글자 폭 (픽셀) / 아틀라스에 구운 글꼴 높이
+    float textWidth(const char *text) const;
+    float pixelHeight() const { return pixelHeight_; }
 };

@@ -237,6 +237,9 @@ int main() {
   a.grid.shaderRegister(a.shaders);
   a.grid.setPlane(1); // XY 격자
   a.arrow2D.shaderRegister(a.shaders);
+  a.balls.shaderRegister(a.shaders);
+  a.planeBalls.shaderRegister(a.shaders);
+  a.modeBtn.shaderRegister(a.shaders);
   a.font.load("fonts/pixel.ttf", 32.0f);
 
   if (!initGL(a)) {

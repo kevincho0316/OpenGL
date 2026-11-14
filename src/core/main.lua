@@ -20,9 +20,9 @@ function update(dt)
 
     -- 카메라 테스트: 원점 주위를 공전하면서 위아래로 흔들림
     camPerspective(60)
-    local orbit = t * 0.8
+    local orbit = t * 0.1
     local radius = 7
-    local cp = vec3.new(math.sin(orbit) * radius * math.sin(t), math.sin(t * 0.5) * 3, math.cos(orbit) * radius)
+    local cp =vec3.new(math.sin(orbit) * radius * math.sin(t*0.2), math.sin(t * 0.5) * 3, math.cos(orbit) * radius)
 
     camPos(cp)
     camLookAt(vec3.new(0, 0, 0))
