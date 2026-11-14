@@ -1,8 +1,9 @@
 #include "arrow2D.h"
 #include "core/render.h"
 #include "glm/fwd.hpp"
-#include "platform/android/log.h"
-#include <GLES3/gl3.h>
+#include "core/log.h"
+#include "../gl.h"
+#include <chrono>
 
 bool Arrow2D::shaderRegister(ShaderLib &lib) {
     return lib.add("Arrow2D", "shaders/arrow2D.vert",

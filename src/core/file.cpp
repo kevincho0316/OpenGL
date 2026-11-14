@@ -1,5 +1,5 @@
 #include "file.h"
-#include "../platform/android/log.h"
+#include "log.h"
 #include <cstdio>
 #include <string>
 #ifdef __ANDROID__

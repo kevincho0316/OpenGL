@@ -8,7 +8,7 @@
 #include "glm/ext/vector_float4.hpp"
 #include "glm/fwd.hpp"
 #include "shader.h"
-#include <GLES3/gl3.h>
+#include "../gl.h"
 #include <glm/glm.hpp>
 
 class Arrow2D {

@@ -3,7 +3,7 @@
 #include "glm/ext/vector_float2.hpp"
 #include "glm/ext/vector_float4.hpp"
 #include "glm/fwd.hpp"
-#include <GLES3/gl3.h>
+#include "../gl.h"
 #include <glm/glm.hpp>
 
 class RigidBody {

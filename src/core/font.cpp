@@ -1,6 +1,6 @@
 #define STB_TRUETYPE_IMPLEMENTATION // 프로젝트 전체에서 이 파일 딱 한 곳
 #include "font.h"
-#include "../platform/android/log.h"
+#include "log.h"
 #include "file.h"
 
 bool Font::load(const char *path, float pixelHeight) {

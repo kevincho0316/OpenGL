@@ -4,10 +4,10 @@
 #include "core/render.h"
 #include "core/shaderLib.h"
 #include "core/uniform.h"
-#include "platform/android/log.h"
+#include "core/log.h"
 #include "shader.h"
 #include "sol/traits.hpp"
-#include <GLES3/gl3.h>
+#include "../gl.h"
 #include <glm/glm.hpp>
 #include <vector>
 

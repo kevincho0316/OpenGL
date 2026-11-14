@@ -1,6 +1,6 @@
 #include "textRenderer.h"
 #include "core/shader.h"
-#include <GLES3/gl3.h>
+#include "../gl.h"
 #include <glm/gtc/matrix_transform.hpp>
 
 bool TextRenderer::init(const Font &font) {

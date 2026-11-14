@@ -1,6 +1,6 @@
 #include "shaderLib.h"
 #include "core/shader.h"
-#include "platform/android/log.h"
+#include "core/log.h"
 #include "uniform.h"
 #include <cstddef>
 

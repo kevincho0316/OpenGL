@@ -41,7 +41,7 @@ else
     set_kind("binary")
     set_rundir("$(projectdir)")
     add_files("src/platform/desktop/*.cpp")
-    add_packages("glfw", "glm", "glad", 'freetype')
+    add_packages("glfw", "glm", "glad")
     if is_plat("windows") then
         add_links("opengl32")
         add_syslinks("ws2_32")
