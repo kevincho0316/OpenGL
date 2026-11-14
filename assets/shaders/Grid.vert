@@ -23,4 +23,5 @@ void main() {
         vCoord = world.yz;
     }
     gl_Position = projection * view * vec4(world, 1.0);
+    gl_Position.z += 0.0005 * gl_Position.w; // 깊이만 살짝 뒤로
 }

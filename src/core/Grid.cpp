@@ -55,5 +55,5 @@ void Grid::destroy() {
 void Grid::draw(Renderer &r, const Camera &cam, float aspect) {
     std::vector<ShaderUniform> su = {
         {"uScale", scale_}, {"uCam", cam.position}, {"uPlane", plane_}};
-    r.submit({Pass::Overlay, shaderEntry_, vao_, GL_TRIANGLES, 0, 6, su});
+    r.submit({Pass::Transparent, shaderEntry_, vao_, GL_TRIANGLES, 0, 6, su});
 }

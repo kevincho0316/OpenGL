@@ -3,7 +3,6 @@
 #include "glm/fwd.hpp"
 #include "platform/android/log.h"
 #include <GLES3/gl3.h>
-#include <chrono>
 
 bool Arrow2D::shaderRegister(ShaderLib &lib) {
     return lib.add("Arrow2D", "shaders/arrow2D.vert",
@@ -13,8 +12,10 @@ bool Arrow2D::shaderRegister(ShaderLib &lib) {
 bool Arrow2D::init(ShaderLib &lib) {
     shaderEntry_ = lib.get("Arrow2D");
 
-    if (shaderEntry_ == nullptr)
+    if (shaderEntry_ == nullptr) {
         LOGE("Arrow2D::NEED to register the shader to shader lib");
+        return false;
+    }
 
     glGenVertexArrays(1, &vao_);
     glGenBuffers(1, &vbo_);
@@ -37,7 +38,7 @@ void Arrow2D::draw(Renderer &r, glm::vec2 an, glm::vec2 dir, float s,
 
     static const auto t0 = std::chrono::steady_clock::now();
     r.submit({
-        Pass::Opaque,
+        Pass::Overlay,
         shaderEntry_,
         vao_,
         GL_TRIANGLES,

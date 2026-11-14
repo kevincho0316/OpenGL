@@ -15,7 +15,7 @@ class Arrow2D {
   private:
     const ShaderEntry *shaderEntry_ = nullptr;
 
-    GLuint vao_, vbo_ = 0;
+    GLuint vao_ = 0, vbo_ = 0;
     glm::vec2 anchor_;
     glm::vec2 dir_;
     glm::vec2 screen_;

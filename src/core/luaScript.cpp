@@ -153,7 +153,7 @@ std::string loadLuaScript(App &a, const std::string &src) {
             if (!s->shader.ID)
                 return;
 
-            a.renderer.submit({Pass::Opaque,
+            a.renderer.submit({Pass::Transparent,
                                s,
                                a.vao,
                                GL_TRIANGLE_STRIP,

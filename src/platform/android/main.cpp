@@ -169,7 +169,6 @@ static void termGL(App &a) {
     if (a.ctx != EGL_NO_CONTEXT) {
         a.grid.destroy();
         a.arrow2D.destroy();
-        a.shaders.destroyAll();
         glDeleteBuffers(1, &a.vbo);
         glDeleteVertexArrays(1, &a.vao);
     }
