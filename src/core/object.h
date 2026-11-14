@@ -1,3 +1,5 @@
+#pragma once
+
 #include "core/Rigidbody.h"
 #include "core/objectTransform.h"
 #include "core/render.h"

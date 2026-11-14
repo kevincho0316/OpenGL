@@ -1,9 +1,9 @@
-#include "../gl.h"
+#pragma once
+
 #include "glm/detail/qualifier.hpp"
 #include "glm/ext/vector_float2.hpp"
 #include "glm/ext/vector_float4.hpp"
 #include "glm/fwd.hpp"
-#include "../gl.h"
 #include <glm/glm.hpp>
 
 class RigidBody {
@@ -13,8 +13,8 @@ class RigidBody {
 
   public:
     glm::vec3 get_vel() { return vel_; }
-    glm::vec3 set_vel(glm::vec3 v) { vel_ = v; }
+    void set_vel(glm::vec3 v) { vel_ = v; }
 
     glm::vec3 get_accel() { return accel_; }
-    glm::vec3 set_accel(glm::vec3 a) { accel_ = a; }
+    void set_accel(glm::vec3 a) { accel_ = a; }
 };
