@@ -157,8 +157,6 @@ static bool initGL(App &a, ANativeWindow *win) {
     a.glCurrent = true;
     appInitGL(a);
 
-    a.p.initProfiler();
-
     LOGI("GL init ok: %s / %s", (const char *)glGetString(GL_VERSION),
          (const char *)glGetString(GL_RENDERER));
     return true;

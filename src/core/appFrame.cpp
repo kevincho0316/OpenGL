@@ -24,6 +24,7 @@ void appInitGL(App &a) {
     a.specters.init(a.shaders);
     a.post.init(a.shaders);
     a.textRenderer.init(a.font);
+    a.p.initProfiler();
 }
 
 void appTermGL(App &a) {

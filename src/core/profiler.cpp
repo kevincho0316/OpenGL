@@ -1,13 +1,15 @@
 #include "profiler.h"
 #include <chrono>
 #include <thread>
-void profiler::initProfiler() { start = std::chrono::steady_clock::now(); }
+void profiler::initProfiler() {
+    start_ = lastFrame_ = std::chrono::steady_clock::now();
+}
 
 // can be optimized
 //
 void profiler::endFrame() {
     std::chrono::time_point end = std::chrono::steady_clock::now();
-    std::chrono::duration<double> samplingT = end - start;
+    std::chrono::duration<double> samplingT = end - start_;
 
     pastFrame_++;
     dt_ = end - lastFrame_;
@@ -18,7 +20,7 @@ void profiler::endFrame() {
 
     if (samplingT.count() > 0.5) {
         fps_ = static_cast<float>(pastFrame_) / samplingT.count();
-        start = end;
+        start_ = end;
         pastFrame_ = 0;
 
         shownMaxMs_ = static_cast<float>(maxFrame_ * 1000.0);
