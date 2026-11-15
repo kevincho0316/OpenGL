@@ -57,7 +57,7 @@ void Button::draw(Renderer &r, std::vector<TextCmd> &texts, const Font &font,
                   glm::vec2 screen) const {
     if (vao_) {
         float corner = cornerRadius;
-        float border = std::max(2.0f, size.y * 0.04f);
+        float border = std::max(6.0f, size.y * 0.04f);
         r.submit({Pass::UI,
                   shaderEntry_,
                   vao_,

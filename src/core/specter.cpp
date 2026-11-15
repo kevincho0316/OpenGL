@@ -1,5 +1,6 @@
 #include "core/specter.h"
 #include "core/log.h"
+#include "glm/ext/vector_float3.hpp"
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
@@ -66,14 +67,16 @@ void SpecterParticles::destroy() {
 void SpecterParticles::respawn(Particle &p, const Camera &cam, float aspect) {
     float d = glm::mix(distMin, distMax, rand01());
     // Half size of the view at distance d
-    float halfH = cam.perspective
-                      ? d * std::tan(glm::radians(cam.fov) * 0.5f)
-                      : cam.orthoSize;
+    float halfH = cam.perspective ? d * std::tan(glm::radians(cam.fov) * 0.5f)
+                                  : cam.orthoSize;
     float halfW = halfH * aspect;
     float rx = (rand01() * 2.0f - 1.0f) * spread;
     float ry = (rand01() * 2.0f - 1.0f) * spread;
-    p.position = cam.position + cam.front() * d + cam.right() * (rx * halfW) +
-                 cam.up() * (ry * halfH);
+    // p.position = cam.position + cam.front() * d + cam.right() * (rx * halfW)
+    // +
+    //              cam.up() * (ry * halfH);
+
+    p.position = glm::vec3{0.0f};
     p.scale = glm::mix(scaleMin, scaleMax, rand01());
     p.lifetime = glm::mix(lifeMin, lifeMax, rand01());
     p.random = rand01();
@@ -104,8 +107,8 @@ void SpecterParticles::draw(Renderer &r) {
 
     instances_.clear();
     for (const Particle &p : particles_)
-        instances_.push_back({p.position.x, p.position.y, p.position.z,
-                              p.scale, p.life, p.random});
+        instances_.push_back({p.position.x, p.position.y, p.position.z, p.scale,
+                              p.life, p.random});
 
     glBindBuffer(GL_ARRAY_BUFFER, instVbo_);
     glBufferData(GL_ARRAY_BUFFER, instances_.size() * sizeof(Instance),

@@ -19,11 +19,11 @@ class SpecterParticles {
     // uncertain; change here or set uvScale at runtime).
     static constexpr float UV_SCALE = 1.0f;
 
-    int count = 40;
-    float lifeMin = 1.0f, lifeMax = 2.0f;   // lifetime range, seconds
+    int count = 1;
+    float lifeMin = 8.0f, lifeMax = 12.0f;  // lifetime range, seconds
     float scaleMin = 0.5f, scaleMax = 1.5f; // quad half extent, world units
     float distMin = 4.0f, distMax = 10.0f;  // spawn distance in front of camera
-    float spread = 0.9f;                    // fraction of the view used for spawning
+    float spread = 0.9f; // fraction of the view used for spawning
     float uvScale = UV_SCALE;
     int debugMode = 0; // 0 = final, 1 = one specter() channel grey, 2 = polar
 
@@ -33,7 +33,8 @@ class SpecterParticles {
 
     // Ages particles; life reaching 1 respawns in front of the camera
     void update(float dt, const Camera &cam, float aspect);
-    void draw(Renderer &r); // uploads instance data + submits one instanced draw
+    void
+    draw(Renderer &r); // uploads instance data + submits one instanced draw
 
   private:
     struct Particle {

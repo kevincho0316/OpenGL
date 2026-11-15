@@ -21,15 +21,15 @@ function update(dt)
     setFloat("main", "uStreak", 0.7)
     setFloat("main", "uWingAng", 1.15)
     setFloat("main", "uWingW", 0.35)
-    setTrans(t * 20, vec3.new(0.0, 0.0, 1.0),vec3.new(0.5, -0.5, 0.0));
-
+    setTrans(t * 20, vec3.new(0.0, 0.0, 1.0), vec3.new(0.5, -0.5, 0.0));
+    postEnable(true) -- 1) bloom 끄기: 이것만으로 빨라지면 post 쪽이 원인
 
 
     -- 카메라 테스트: 원점 주위를 공전하면서 위아래로 흔들림
     camPerspective(60)
     local orbit = t * 0.1
-    local radius = 7
-    local cp =vec3.new(math.sin(orbit) * radius * math.sin(t*0.2), math.sin(t * 0.5) * 3, math.cos(orbit) * radius)
+    local radius = 3
+    local cp = vec3.new(0, 0, 1) --math.sin(orbit) * radius * math.sin(t * 0.2), math.sin(t * 0.5) * 3, math.cos(orbit) * radius)
 
     camPos(cp)
     camLookAt(vec3.new(0, 0, 0))
@@ -38,7 +38,7 @@ function update(dt)
     setText("y: " .. string.format("%.2f", cp.y), 250.0, 400.0, 5, vec4.new(1, 1, 1, 1))
     setText("z: " .. string.format("%.2f", cp.z), 250.0, 550.0, 5, vec4.new(1, 1, 1, 1))
 
-    local a = t * 2 * math.pi / 5 -- 5초에 한 바퀴
-    rect("main", vec4.new(0, 0, 6, 13),
-        vec3.new(0.5 + math.sin(a), 0.6, 0.85))
+    --    local a = t * 2 * math.pi / 5 -- 5초에 한 바퀴
+    --   rect("main", vec4.new(0, 0, 6, 13),
+    --     vec3.new(0.5 + math.sin(a), 0.6, 0.85))
 end

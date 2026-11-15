@@ -62,9 +62,9 @@ function update(dt)
     setText("y: " .. string.format("%.2f", cp.y), 250.0, 400.0, 5, vec4.new(1, 1, 1, 1))
     setText("z: " .. string.format("%.2f", cp.z), 250.0, 550.0, 5, vec4.new(1, 1, 1, 1))
 
-    local a = t * 2 * math.pi / 5 -- 5초에 한 바퀴
-    rect("main",vec4.new(0, 0, 6, 13),
-        vec3.new(0.5 + math.sin(a), 0.6, 0.85))
+    --local a = t * 2 * math.pi / 5 -- 5초에 한 바퀴
+    --rect("main",vec4.new(0, 0, 6, 13),
+    --    vec3.new(0.5 + math.sin(a), 0.6, 0.85))
 end
 )LUA";
 
@@ -156,6 +156,8 @@ static bool initGL(App &a, ANativeWindow *win) {
 
     a.glCurrent = true;
     appInitGL(a);
+
+    a.p.initProfiler();
 
     LOGI("GL init ok: %s / %s", (const char *)glGetString(GL_VERSION),
          (const char *)glGetString(GL_RENDERER));

@@ -3,6 +3,7 @@
 #include "core/arrow2D.h"
 #include "core/balls.h"
 #include "core/button.h"
+#include "core/profiler.h"
 #include "gl.h"
 #include <cstdint>
 #include <glm/glm.hpp>
@@ -32,44 +33,48 @@ struct GLFWwindow;
 
 struct App {
 #ifdef __ANDROID__
-  // EGL / GL (창이 없어지면 전부 해제 → 다시 생성)
-  EGLDisplay dpy = EGL_NO_DISPLAY;
-  EGLSurface surf = EGL_NO_SURFACE;
-  EGLContext ctx = EGL_NO_CONTEXT;
-  bool glCurrent = false; // eglMakeCurrent 성공 여부 (GL 리소스 해제 가능?)
-  bool glReady() const { return ctx != EGL_NO_CONTEXT; }
+    // EGL / GL (창이 없어지면 전부 해제 → 다시 생성)
+    EGLDisplay dpy = EGL_NO_DISPLAY;
+    EGLSurface surf = EGL_NO_SURFACE;
+    EGLContext ctx = EGL_NO_CONTEXT;
+    bool glCurrent = false; // eglMakeCurrent 성공 여부 (GL 리소스 해제 가능?)
+    bool glReady() const { return ctx != EGL_NO_CONTEXT; }
 #else
-  GLFWwindow *win = nullptr;
-  bool glReady() const { return win != nullptr; }
+    GLFWwindow *win = nullptr;
+    bool glReady() const { return win != nullptr; }
 #endif
-  GLuint vao = 0, vbo = 0;
-  float clear[3] = {0, 0, 0};
-  float t = 0;
-  ShaderLib shaders;
-  Camera cam; // 스크립트 리로드해도 유지됨
-  Grid grid;
-  Font font;
-  TextRenderer textRenderer;
+    GLuint vao = 0, vbo = 0;
+    float clear[3] = {0, 0, 0};
+    float t = 0;
+    ShaderLib shaders;
+    Camera cam; // 스크립트 리로드해도 유지됨
+    Grid grid;
+    Font font;
+    TextRenderer textRenderer;
 
-  std::vector<TextCmd> texts;
-  std::vector<inputEvent> inputEvents;
-  Renderer renderer;
-  PostFx post;               // HDR target + bloom / tonemap
-  SpecterParticles specters; // "Butterfly Specter" particles (key V = debug view)
+    std::vector<TextCmd> texts;
+    std::vector<inputEvent> inputEvents;
+    Renderer renderer;
+    PostFx post; // HDR target + bloom / tonemap
+    SpecterParticles
+        specters; // "Butterfly Specter" particles (key V = debug view)
 
-  Arrow2D arrow2D;
-  Balls balls;       // 클릭하면 카메라에서 발사되는 3D 공
-  Balls2D planeBalls; // 월드 평면 z = planeZ 위의 2D 공
-  bool usePlaneBalls = false; // 버튼 / 키 1 = 3D 공, 2 = 평면 공
-  Button modeBtn;             // 공 종류 전환 (터치용)
-  bool dragging = false;
-  glm::vec2 dragStart{0.0f}, dragCur{0.0f};
+    Arrow2D arrow2D;
+    Balls balls;                // 클릭하면 카메라에서 발사되는 3D 공
+    Balls2D planeBalls;         // 월드 평면 z = planeZ 위의 2D 공
+    bool usePlaneBalls = false; // 버튼 / 키 1 = 3D 공, 2 = 평면 공
+    Button modeBtn;             // 공 종류 전환 (터치용)
+    bool dragging = false;
+    glm::vec2 dragStart{0.0f}, dragCur{0.0f};
 
-  // Lua (GL 객체를 갖지 않으므로 컨텍스트 손실과 무관하게 유지)
-  std::unique_ptr<sol::state> lua;
-  bool needInit = false;
-  std::string lastError; // 런타임 에러 (status 로 조회)
-  std::string printBuf;  // print() 출력 (status 로 조회)
-  // 핫 리로드 리슨 소켓 (core/hotReload.cpp). 윈도우 SOCKET 도 담도록 intptr_t
-  std::intptr_t listenFd = -1;
+    // Lua (GL 객체를 갖지 않으므로 컨텍스트 손실과 무관하게 유지)
+    std::unique_ptr<sol::state> lua;
+    bool needInit = false;
+    std::string lastError; // 런타임 에러 (status 로 조회)
+    std::string printBuf;  // print() 출력 (status 로 조회)
+    // 핫 리로드 리슨 소켓 (core/hotReload.cpp). 윈도우 SOCKET 도 담도록
+    // intptr_t
+    std::intptr_t listenFd = -1;
+
+    profiler p;
 };
