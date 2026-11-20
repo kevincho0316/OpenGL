@@ -21,9 +21,12 @@ if [ ! -f $KS ]; then
     -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
 fi
 
-rm -rf $OUT; mkdir -p $OUT/lib/arm64-v8a
+rm -rf $OUT; mkdir -p $OUT/lib/arm64-v8a $OUT/assets/scripts
+# assets + main.lua 를 APK 에 넣음 (안드로이드 시작 스크립트)
+cp -r assets/. $OUT/assets/
+cp src/core/main.lua $OUT/assets/scripts/main.lua
 $BT/aapt2 link -o $OUT/unsigned.apk \
-  -A assets \
+  -A $OUT/assets \
   --manifest android/AndroidManifest.xml -I $JAR \
   --min-sdk-version 24 --target-sdk-version $TARGET
 cp "$SO" $OUT/lib/arm64-v8a/libmain.so

@@ -9,10 +9,12 @@
 #include <android_native_app_glue.h>
 #include <cstdint>
 #include <cstdio>
+#include <string>
 #include <time.h>
 
 #include "core/App.h"
 #include "core/appFrame.h"
+#include "core/defaultScript.h"
 #include "core/file.h"
 #include "core/hotReload.h"
 #include "core/log.h"
@@ -20,53 +22,9 @@
 #include "core/shader.h"
 
 static const int PORT = 7777;
+// APK 안의 assets/scripts/main.lua (build_apk.sh 가 src/core/main.lua 를 복사)
+static const char *SCRIPT_ASSET = "scripts/main.lua";
 
-static const char *DEFAULT_SCRIPT = R"LUA(
-local t = 0
-function init()
-    -- setFont('fonts/pixel.ttf', 35.0)
-end
-
-function update(dt)
-    t = t+dt
-    clear_color(0.0, 0.0, 0.0)
-
-    setFloat("main","uToffset", 0.06)
-    setFloat("main","uboost", 2.0)
-    setFloat("main","ucontrast", 0.8)
-    setFloat("main","uConCenter", 0.8)
-    setFloat("main","uradius", 0.6)
-    setFloat("main","ufadeRad", 0.3)
-    setFloat("main","NOISE_AMT", 0.6)
-    setFloat("main", "uDisp", 0.12)
-    setFloat("main", "uFall", 3.0)
-    setFloat("main", "uExposure", 1.0)
-    setFloat("main", "uDispR", 0.25)
-    setFloat("main", "uStreak", 0.7)
-    setFloat("main", "uWingAng", 1.15)
-    setFloat("main", "uWingW", 0.35)
-    setTrans(t * 20, vec3.new(0.0, 0.0, 1.0),vec3.new(0.5, -0.5, 0.0));
-
-
-
-    -- 카메라 테스트: 원점 주위를 공전하면서 위아래로 흔들림
-    camPerspective(60)
-    local orbit = t * 0.8
-    local radius = 7
-    local cp = vec3.new(math.sin(orbit) * radius * math.sin(t), math.sin(t * 0.5) * 3, math.cos(orbit) * radius)
-
-    camPos(cp)
-    camLookAt(vec3.new(0, 0, 0))
-
-    setText("x: " .. string.format("%.2f", cp.x), 250.0, 250.0, 5, vec4.new(1, 1, 1, 1))
-    setText("y: " .. string.format("%.2f", cp.y), 250.0, 400.0, 5, vec4.new(1, 1, 1, 1))
-    setText("z: " .. string.format("%.2f", cp.z), 250.0, 550.0, 5, vec4.new(1, 1, 1, 1))
-
-    --local a = t * 2 * math.pi / 5 -- 5초에 한 바퀴
-    --rect("main",vec4.new(0, 0, 6, 13),
-    --    vec3.new(0.5 + math.sin(a), 0.6, 0.85))
-end
-)LUA";
 
 static const char *VsDir = "shaders/VertexShader.glsl";
 static const char *FsDir = "shaders/ButterflyFgSh_v2.glsl";
@@ -228,6 +186,12 @@ void android_main(android_app *app) {
     a.font.load("fonts/pixel.ttf", 32.0f);
 
     loadLuaScript(a, DEFAULT_SCRIPT);
+    // 데스크톱처럼 main.lua 로 시작 (없으면 DEFAULT_SCRIPT 유지)
+    auto buf = readFile(SCRIPT_ASSET);
+    if (!buf.empty()) {
+        std::string r = loadLuaScript(a, std::string(buf.begin(), buf.end()));
+        LOGI("%s: %s", SCRIPT_ASSET, r.c_str());
+    }
     hotReloadOpen(a, PORT);
 
     double prev = now();

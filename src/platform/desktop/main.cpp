@@ -11,6 +11,7 @@
 
 #include "core/App.h"
 #include "core/appFrame.h"
+#include "core/defaultScript.h"
 #include "core/hotReload.h"
 #include "core/log.h"
 #include "core/luaScript.h"
@@ -23,15 +24,6 @@
 
 static const int PORT = 7777;
 static const char *SCRIPT_PATH = "src/core/main.lua";
-
-// main.lua 를 못 읽을 때만 사용
-static const char *DEFAULT_SCRIPT = R"LUA(
-local t = 0
-function update(dt)
-  t = t + dt
-  clear_color(0.1 + 0.1 * math.sin(t), 0.2, 0.3)
-end
-)LUA";
 
 static const char *VsDir = "shaders/VertexShader.glsl";
 static const char *FsDir = "shaders/ButterflyFgSh_v2.glsl";
